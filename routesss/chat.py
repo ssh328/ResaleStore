@@ -85,16 +85,22 @@ def get_chat_rooms():
     return chat_room_list
 
 # 채팅 페이지
-@chatting.route('/get_messages/<receive_user_id>', methods=['GET'])
+@chatting.route('/get_messages/<string:receive_user_id>', methods=['GET', 'POST'])
 @admin_only
 def chat(receive_user_id):
     # receive_user_id: 메시지를 받게 되는 사람
     receive_user_id = receive_user_id
-    # print(f"Received user_id: {receive_user_id}")  # 디버깅을 위한 출력
-    receive_user_name = request.args.get('receive_user_name')
-    # print(f"Received user_name: {receive_user_name}")
-    room_id = request.args.get('room_id')
-    # print(f"Received room_id: {room_id}")
+
+    if request.method == 'GET':
+        receive_user_name = request.args.get('receive_user_name')
+        room_id = request.args.get('room_id')
+
+    if request.method == 'POST':
+        data = request.get_json()
+            
+        # 데이터 추출
+        room_id = data.get('room_id')
+        receive_user_name = data.get('receive_user_name')
 
     # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
     room = Room.query.filter(
@@ -134,9 +140,23 @@ def chat(receive_user_id):
         else:
             messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.sender_last_join).order_by(Message.time).all()
         
-        return render_template('chat/new_chat_room.html', user=current_user.name, room_id=chat_room.id,
-                               receive_user_name=receive_user_name, messages=messages, logged_in=current_user.is_authenticated,
-                               receive_user_id=receive_user_id)
+        return jsonify({
+            'user': current_user.name,
+            'room_id': chat_room.id,
+            'receive_user_name': receive_user_name,
+            'messages': [
+                {
+                    'id': message.id,
+                    'room_id': message.room_id,
+                    'sender_name': message.sender_name,
+                    'receive_user_name': message.receive_user_name,
+                    'text': message.text,
+                    'time': message.time.isoformat()
+                } for message in messages
+            ],
+            'logged_in': current_user.is_authenticated,
+            'receive_user_id': receive_user_id
+        })
 
     elif current_user.id == chat_room.receiver_id:
         if chat_room.receiver_join == False:
@@ -149,9 +169,23 @@ def chat(receive_user_id):
         else:
             messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.receiver_last_join).all()
 
-        return render_template('chat/new_chat_room.html', user=current_user.name, room_id=chat_room.id,
-                               receive_user_name=receive_user_name, messages=messages, logged_in=current_user.is_authenticated,
-                               receive_user_id=receive_user_id)
+        return jsonify({
+            'user': current_user.name,
+            'room_id': chat_room.id,
+            'receive_user_name': receive_user_name,
+            'messages': [
+                {
+                    'id': message.id,
+                    'room_id': message.room_id,
+                    'sender_name': message.sender_name,
+                    'receive_user_name': message.receive_user_name,
+                    'text': message.text,
+                    'time': message.time.isoformat()
+                } for message in messages
+            ],
+            'logged_in': current_user.is_authenticated,
+            'receive_user_id': receive_user_id
+        })
 
 @socketio.on("connect")
 def test_connect():
