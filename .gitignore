@@ -1,6 +1,8 @@
 # Project Wide
 .DS_Store
 instance/data.db
+static/javascripts/ckeditor.js
+static/javascripts/main.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
