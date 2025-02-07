@@ -91,6 +91,8 @@ def increase(post_id):
     # jsonify(): 서버에서 JSON 형식의 응답을 클라이언트에게 반환할 때 사용
     # Python 딕셔너리 {'data_counter': counter} 를 JSON 형식으로 반환
 
+    test
+
 
 if __name__ == '__main__' :
     # app.run(debug=True)
