@@ -37,64 +37,64 @@ def get_chat_rooms():
     user_id = current_user.id
     rooms = Room.query.filter(or_(Room.sender_id == user_id, Room.receiver_id == user_id)).all()
     chat_room_list = []
-    
-    def get_other_user_info(room):
-        # receive_user_id: 메시지를 받게 되는 사람
-        # print(f"Received user_id: {receive_user_id}")  # 디버깅을 위한 출력
-        receive_user_name = request.args.get('receive_user_name')
-        # print(f"Received user_name: {receive_user_name}")
-        room_id = request.args.get('room_id')
-        # print(f"Received room_id: {room_id}")
 
-        # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
-        room = Room.query.filter(
-            or_(
-                and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
-                and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
-            )
-        ).first()
+    # receive_user_id: 메시지를 받게 되는 사람
+    # print(f"Received user_id: {receive_user_id}")  # 디버깅을 위한 출력
+    receive_user_name = request.args.get('receive_user_name')
+    # print(f"Received user_name: {receive_user_name}")
+    room_id = request.args.get('room_id')
+    # print(f"Received room_id: {room_id}")
 
-        if not room:
-            new_chat_room = Room(
-                sender_id=current_user.id,
-                receiver_id=receive_user_id,
-                sender_join=True,
-                receiver_join=True
-            )
-            db.session.add(new_chat_room)
+    # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
+    room = Room.query.filter(
+        or_(
+            and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
+            and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
+        )
+    ).first()
+
+    if not room:
+        new_chat_room = Room(
+            sender_id=current_user.id,
+            receiver_id=receive_user_id,
+            sender_join=True,
+            receiver_join=True
+        )
+        db.session.add(new_chat_room)
+        db.session.commit()
+
+        room = new_chat_room
+
+    # room_id가 존재하면 해당 room_id로, 그렇지 않으면 room.id로 chat_room을 가져옴
+    chat_room = db.get_or_404(Room, room_id if room_id else room.id)
+    # print(chat_room)
+
+    if current_user.id != chat_room.sender_id and current_user.id != chat_room.receiver_id:
+        return redirect(url_for('index'))
+
+    if current_user.id == chat_room.sender_id:
+        if chat_room.sender_join == False:
+            chat_room.sender_join = True
+            chat_room.sender_last_join = datetime.now()
             db.session.commit()
 
-            room = new_chat_room
+        if chat_room.sender_last_join is None:
+            messages = Message.query.filter_by(room_id=chat_room.id).order_by(Message.time).all()  # 시간순 정렬 추가
+        else:
+            messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.sender_last_join).order_by(Message.time).all()
 
-        # room_id가 존재하면 해당 room_id로, 그렇지 않으면 room.id로 chat_room을 가져옴
-        chat_room = db.get_or_404(Room, room_id if room_id else room.id)
-        # print(chat_room)
+    elif current_user.id == chat_room.receiver_id:
+        if chat_room.receiver_join == False:
+            chat_room.receiver_join = True
+            chat_room.receiver_last_join = datetime.now()
+            db.session.commit()
 
-        if current_user.id != chat_room.sender_id and current_user.id != chat_room.receiver_id:
-            return redirect(url_for('index'))
-
-        if current_user.id == chat_room.sender_id:
-            if chat_room.sender_join == False:
-                chat_room.sender_join = True
-                chat_room.sender_last_join = datetime.now()
-                db.session.commit()
-
-            if chat_room.sender_last_join is None:
-                messages = Message.query.filter_by(room_id=chat_room.id).order_by(Message.time).all()  # 시간순 정렬 추가
-            else:
-                messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.sender_last_join).order_by(Message.time).all()
-
-        elif current_user.id == chat_room.receiver_id:
-            if chat_room.receiver_join == False:
-                chat_room.receiver_join = True
-                chat_room.receiver_last_join = datetime.now()
-                db.session.commit()
-
-            if chat_room.receiver_last_join is None:
-                messages = Message.query.filter_by(room_id=chat_room.id).all()  # 모든 메시지
-            else:
-                messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.receiver_last_join).all()
-
+        if chat_room.receiver_last_join is None:
+            messages = Message.query.filter_by(room_id=chat_room.id).all()  # 모든 메시지
+        else:
+            messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.receiver_last_join).all()
+    
+    def get_other_user_info(room):
         # 현재 사용자가 아닌 상대방 정보 가져오기
         other_user_id = room.receiver_id if room.sender_id == user_id else room.sender_id
         other_user = User.query.get(other_user_id)
