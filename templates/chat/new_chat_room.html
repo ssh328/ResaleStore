@@ -30,7 +30,7 @@
             <div class="chat-room-list">
                 {% for room in chat_room_list: %}
                     {% if room.room_check == True: %}
-                        <a href="{{ url_for('chatting.chat', receive_user_id=room.receive_user_id, room_id=room.room_id, receive_user_name=room.receiver_name) }}" 
+                        <a href="{{ url_for('chatting.chat_room', receive_user_id=room.receive_user_id, room_id=room.room_id, receive_user_name=room.receiver_name) }}" 
                             class="chat-room-item text-decoration-none">
                             <div class="d-flex align-items-center p-3 border-bottom">
                                 <div class="position-relative">
