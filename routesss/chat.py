@@ -14,9 +14,10 @@ chatting = Blueprint('chatting', __name__, template_folder='templates/chat')
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # 채팅방 페이지
-@chatting.route('/chat_room/<receive_user_id>', methods=['POST', 'GET'])
+@chatting.route('/chat_room', methods=['POST', 'GET'])
 @admin_only
-def chat_room(receive_user_id):
+def chat_room():
+    receive_user_id = request.args.get('receive_user_id')
     # 캐시 제어를 위한 헤더 추가, 항상 최신 데이터를 표시하도록 보장함
     # make_response(): 응답 객체를 생성하고 캐시 제어 헤더를 추가하는 함수
     response = make_response(render_template('chat/new_chat_room.html', 
@@ -37,6 +38,7 @@ def get_chat_rooms():
     user_id = current_user.id
     rooms = Room.query.filter(or_(Room.sender_id == user_id, Room.receiver_id == user_id)).all()
     chat_room_list = []
+    receive_user_id = request.args.get('receive_user_id')
 
     # receive_user_id: 메시지를 받게 되는 사람
     # print(f"Received user_id: {receive_user_id}")  # 디버깅을 위한 출력
@@ -94,6 +96,7 @@ def get_chat_rooms():
         else:
             messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.receiver_last_join).all()
     
+    # 
     def get_other_user_info(room):
         # 현재 사용자가 아닌 상대방 정보 가져오기
         other_user_id = room.receiver_id if room.sender_id == user_id else room.sender_id
@@ -132,10 +135,10 @@ def get_chat_rooms():
             'other_user_profile': other_user.profile_image_name if other_user else None,
 
             'user_id': current_user.name,
-            'receive_user_name': receive_user_name,
+            # 'receive_user_name': receive_user_name,
             'messages': messages,
             'logged_in': current_user.is_authenticated,
-            'receive_user_id': receive_user_id
+            # 'receive_user_id': receive_user_id
         }
 
     for room in rooms:
