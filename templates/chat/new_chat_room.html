@@ -17,11 +17,8 @@
             <div class="chat-room-list">
                 {% for room in chat_room_list: %}
                     {% if room.room_check == True: %}
-                        <!-- <a href="{{ url_for('chatting.chat_room', receive_user_id=room.receive_user_id, room_id=room.room_id, receive_user_name=room.receiver_name) }}" 
-                            class="chat-room-item text-decoration-none"> -->
-                            <a href="#" 
-                            class="chat-room-item text-decoration-none" 
-                            data_room_receive_user_id="{{ room.receive_user_id }}">
+                        <a href="{{ url_for('chatting.chat_room', receive_user_id=room.receive_user_id, room_id=room.room_id, receive_user_name=room.receiver_name) }}" 
+                            class="chat-room-item text-decoration-none">
                             <div class="d-flex align-items-center p-3 border-bottom">
                                 <div class="position-relative">
                                     {% if room.other_user_profile: %}
@@ -48,7 +45,7 @@
             <div class="empty-chat-placeholder">
                 <p class="text-center text-muted">채팅방을 선택해주세요</p>
             </div>
-            <div class="chat-content" style="display: none;">
+            <div class="chat-content">
                 <div id="msgs-container">
                     <ul id="messages"></ul>
                 </div>
@@ -79,39 +76,6 @@
         "room_id": room_id
         });
 
-    });
-
-    function loadChatRoom(receive_user_id) {
-        // AJAX 요청을 사용하여 서버로부터 메시지를 가져옵니다.
-        fetch(`/chat/get_messages/${receive_user_id}`)
-            .then(response => response.json())
-            .then(data => {
-                const messages = document.getElementById('messages');
-                messages.innerHTML = ''; // 기존 메시지 초기화
-
-                // 빈 채팅 플레이스홀더 숨기기
-                document.querySelector('.empty-chat-placeholder').style.display = 'none';
-                // 채팅 컨텐츠 표시
-                document.querySelector('.chat-content').style.display = 'block';
-
-                data.messages.forEach(message => {
-                    createChatItem(
-                        message.sender_name,
-                        message.text,
-                        message.receive_user_name,
-                        message.timestamp
-                    );
-                });
-            })
-            .catch(error => console.error('Error loading chat room:', error));
-    }
-
-    document.querySelectorAll('.chat-room-item').forEach(item => {
-        item.addEventListener('click', function(event) {
-            event.preventDefault(); // 기본 링크 동작 방지
-            const receive_user_id = this.getAttribute('data_room_receive_user_id');
-            loadChatRoom(receive_user_id);
-        });
     });
 
     socket.on('status', function (data) {

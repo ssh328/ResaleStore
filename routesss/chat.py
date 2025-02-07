@@ -134,7 +134,7 @@ def chat(receive_user_id):
         else:
             messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.sender_last_join).order_by(Message.time).all()
         
-        return render_template('chat/chatting.html', user=current_user.name, room_id=chat_room.id,
+        return render_template('chat/new_chat_room.html', user=current_user.name, room_id=chat_room.id,
                                receive_user_name=receive_user_name, messages=messages, logged_in=current_user.is_authenticated,
                                receive_user_id=receive_user_id)
 
@@ -149,7 +149,7 @@ def chat(receive_user_id):
         else:
             messages = Message.query.filter_by(room_id=chat_room.id).filter(Message.time >= chat_room.receiver_last_join).all()
 
-        return render_template('chat/chatting.html', user=current_user.name, room_id=chat_room.id,
+        return render_template('chat/new_chat_room.html', user=current_user.name, room_id=chat_room.id,
                                receive_user_name=receive_user_name, messages=messages, logged_in=current_user.is_authenticated,
                                receive_user_id=receive_user_id)
 
