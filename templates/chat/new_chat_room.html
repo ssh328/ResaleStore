@@ -21,7 +21,7 @@
                             class="chat-room-item text-decoration-none"> -->
                             <a href="#" 
                             class="chat-room-item text-decoration-none" 
-                            data-room-id="{{ room.room_id }}">
+                            data_room_receive_user_id="{{ room.receive_user_id }}">
                             <div class="d-flex align-items-center p-3 border-bottom">
                                 <div class="position-relative">
                                     {% if room.other_user_profile: %}
@@ -44,18 +44,20 @@
             </div>
         </div>
 
-        <div class="col-md-6" id="chat-room-widget" style="display: none;">
-            <h1>gd</h1>
-            <div id="chat-room-widget mb-3">
+        <div class="col-md-6" id="chat-room-widget">
+            <div class="empty-chat-placeholder">
+                <p class="text-center text-muted">채팅방을 선택해주세요</p>
+            </div>
+            <div class="chat-content" style="display: none;">
                 <div id="msgs-container">
                     <ul id="messages"></ul>
                 </div>
                 <div id="message-box">
                     <input type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
                 </div>
-            </div>
-            <div class="text-center mt-3">
-                <a href="/chat_room" class="btn btn-outline-danger btn-sm" id="leave_chat_btn">채팅방 나가기</a>
+                <div class="text-center mt-3">
+                    <a href="/chat_room" class="btn btn-outline-danger btn-sm" id="leave_chat_btn">채팅방 나가기</a>
+                </div>
             </div>
         </div>
     </div>
@@ -79,14 +81,36 @@
 
     });
 
+    function loadChatRoom(receive_user_id) {
+        // AJAX 요청을 사용하여 서버로부터 메시지를 가져옵니다.
+        fetch(`/chat/get_messages/${receive_user_id}`)
+            .then(response => response.json())
+            .then(data => {
+                const messages = document.getElementById('messages');
+                messages.innerHTML = ''; // 기존 메시지 초기화
+
+                // 빈 채팅 플레이스홀더 숨기기
+                document.querySelector('.empty-chat-placeholder').style.display = 'none';
+                // 채팅 컨텐츠 표시
+                document.querySelector('.chat-content').style.display = 'block';
+
+                data.messages.forEach(message => {
+                    createChatItem(
+                        message.sender_name,
+                        message.text,
+                        message.receive_user_name,
+                        message.timestamp
+                    );
+                });
+            })
+            .catch(error => console.error('Error loading chat room:', error));
+    }
+
     document.querySelectorAll('.chat-room-item').forEach(item => {
         item.addEventListener('click', function(event) {
             event.preventDefault(); // 기본 링크 동작 방지
-            const newRoomId = this.getAttribute('data-room-id');
-            loadChatRoom(newRoomId);
-
-            // 채팅방 표시
-            document.getElementById('chat-room-widget').style.display = 'block';
+            const receive_user_id = this.getAttribute('data_room_receive_user_id');
+            loadChatRoom(receive_user_id);
         });
     });
 

@@ -38,7 +38,7 @@
             <h4 class="mb-5 fw-bold">{{ "{:,.0f}".format(requested_post.price) }} 원</h4>
             <pre class="mb-5t" style="font-size: 1rem; white-space: pre-wrap;">{{ requested_post.body }}</pre>
             {% if not requested_post.author.id == current_user.id: %}
-            <form action="{{ url_for('chatting.chat_room', receive_user_id=requested_post.author.id) }}" method="GET">
+            <form action="{{ url_for('chatting.chat', receive_user_id=requested_post.author.id) }}" method="GET">
                 <button type="submit" name="receive_user_name" value="{{ requested_post.author.name }}" class="btn btn-outline-primary w-100">채팅하기</button>
             </form>
             {% endif %}
