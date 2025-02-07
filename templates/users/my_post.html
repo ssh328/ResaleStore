@@ -1,0 +1,110 @@
+{% extends 'partial/header.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/pagination.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row d-flex align-items-center justify-content-center mt-5">
+    <h2>나의 상품</h2>
+</div>
+
+
+<div class="row row row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 mb-5">
+    {% for data in all_data %}
+    <div class="col">
+        <div class="card" style="width: 100%;">
+            <a class="text-decoration-none text-dark" href="{{ url_for('posts.show_post', post_id=data.id) }}">
+                <img src="{{ data.img_url.split(',')[0] }}" class="card-img-top card-img-square" alt="">
+                <div class="card-body py-2">
+                    <h5 class="card-title text-truncate d-inline-block w-100">{{ data.title }}</h5>
+                    <div class="d-flex justify-content-between">
+                        <p class="card-text mb-1">{{ "{:,.0f}".format(data.price) }} 원</p>
+                        <p class="card-text mb-1">{{ data.date.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                </div>
+            </a>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item py-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-truncate d-inline-block w-100">posted by {{ data.author.name }}</span>
+                        <div class="d-flex align-items-center">
+                            <span class="heart_btn increase-cnt-btn me-2" data-post-id="{{ data.id }}">
+                                {% if data.id in like_posts: %}
+                                <i class="fa-solid fa-heart fa-bounce" style="color: #ff0000; --fa-animation-iteration-count: 0;"></i>
+                                {% else %}
+                                <i class="fa-regular fa-heart" style="color: #000000;"></i>
+                                {% endif %}
+                            </span>
+                            <span id="like-count-{{ data.id }}">
+                                {{ data.like_cnt }}
+                            </span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+<!--PAGINATION-->
+<div class="d-flex justify-content-center mb-5">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <!-- 이전 페이지가 있는지 확인 -->
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <!-- 있는 경우 이전 페이지에 대한 링크 생성 -->
+                <a class="page-link" href="{{ url_for('users.my_post', page=pagination.prev_num) }}">이전</a>
+            </li>
+            {% else %}
+            <!-- 아니라면, 'Previous' 버튼 비활성화 -->
+            <li class="page-item disabled"><span class="page-link">이전</span></li>
+            {% endif %}
+
+            <!-- pagination.iter_pages()에서 제공하는 각 페이지 번호 반복 -->
+            {% for page_num in pagination.iter_pages() %}
+
+            <!-- 페이지 번호가 존재하는지 확인 -->
+            {% if page_num %}
+
+            <!-- 현재 페이지가 활성 페이지가 아닌지 확인 -->
+            {% if page_num != pagination.page %}
+            <!-- 페이지 번호에 대한 클릭 가능한 링크 생성 -->
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('users.my_post', page=page_num) }}">{{ page_num }}</a>
+            </li>
+            {% else %}
+            <!-- 현재 페이지를 활성 페이지로 강조 표시하고 클릭할 수 없음 -->
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% endif %}
+
+            {% else %}
+            <!-- 페이지 매기기 링크에 공백이 있는 경우 줄임표를 표시 -->
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+
+            <!-- 다음 페이지가 있는지 확인 -->
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <!-- 있는 경우, 다음 페이지에 대한 링크 생성 -->
+                <a class="page-link" href="{{ url_for('users.my_post', page=pagination.next_num) }}">다음</a>
+            </li>
+            {% else %}
+            <!-- 아니라면 'Next' 버튼 비활성화 -->
+            <li class="page-item disabled"><span class="page-link">다음</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+
+<script src="{{ url_for('static', filename='javascripts/like_cnt.js') }}"></script>
+
+{% endblock %}

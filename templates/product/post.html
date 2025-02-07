@@ -1,0 +1,108 @@
+{% extends 'partial/header.html' %}
+
+{% block content %}
+
+<div class="container pb-5">
+    <div class="row d-flex align-items-stretch mt-5">
+        <div class="text-danger text-center">
+            {% include 'partial/flash.html' %}
+        </div>
+        <div class="col-lg-6 col-md-12 mb-3">
+            <div id="carouselExample" class="carousel slide">
+                <div class="carousel-inner">
+                    {% for img in img_urls %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %} container-fluid" style="height: 450px;">
+                        <img src="{{ img }}" class="d-block w-100 h-100" alt="..." style="object-fit: contain;" data-bs-toggle="modal" data-bs-target="#imageModal">
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+            <div class="d-flex align-items-center ms-3 mb-5">
+                <a href="{{ url_for('users.user_profile', user_name=requested_post.author.name) }}" class="d-flex align-items-center text-decoration-none text-muted">
+                    <img src="{{ requested_post.author.profile_image_name }}" class="rounded-circle" width="50" height="50" alt="알 수 없음">
+                    <h5 class="ms-2 mb-0">{{ requested_post.author.name }} 님의 프로필 보기</h5>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-12">
+            <h1 class="mb-3">{{ requested_post.title }}</h1>
+            <h5 class="text-muted mb-4">카테고리: {{ requested_post.category }}</h5>
+            <h4 class="mb-5 fw-bold">{{ "{:,.0f}".format(requested_post.price) }} 원</h4>
+            <pre class="mb-5t" style="font-size: 1rem; white-space: pre-wrap;">{{ requested_post.body }}</pre>
+            {% if not requested_post.author.id == current_user.id: %}
+            <form action="{{ url_for('chatting.chat', receive_user_id=requested_post.author.id) }}" method="GET">
+                <button type="submit" name="receive_user_name" value="{{ requested_post.author.name }}" class="btn btn-outline-primary w-100">채팅하기</button>
+            </form>
+            {% endif %}
+
+            {% if current_user.id == ADMIN_USER_ID or current_user.id == requested_post.author.id : %}
+            <div class="d-flex gap-2 mb-3">
+                <form action="{{ url_for('posts.edit', post_id=requested_post.id) }}" method="GET">
+                    <button type="submit" name="edit_btn" class="btn btn-outline-info">수정하기</button>
+                </form>
+
+
+                <button type="submit" name="delete_btn" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제하기</button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5 fw-bold" id="deleteModalLabel">게시물 삭제</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                정말 삭제하시겠습니까?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                                <form action="{{ url_for('posts.delete', post_id=requested_post.id) }}" method="POST">
+                                    <button type="submit" name="delete_btn" class="btn btn-outline-danger">삭제하기</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div id="modalCarousel" class="carousel slide">
+                <div class="carousel-inner">
+                    {% for img in img_urls %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <img src="{{ img }}" class="d-block w-100 h-100" alt="큰 이미지" style="width: 100%; height: auto;">
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#modalCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#modalCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='javascripts/modal.js') }}"></script>
+
+{% endblock %}

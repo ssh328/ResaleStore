@@ -1,0 +1,105 @@
+{% extends 'partial/header.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/ckeditor.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<form action="{{ url_for('posts.add_new_products_post') }}" method="POST" enctype="multipart/form-data" novalidate class="validated-form">
+    <div class="container pb-5" style="max-width: 795px;">
+        <div class="row d-flex align-items-center justify-content-center mt-5 px-3">
+            <div class="mb-3">
+                <label for="title" class="form-label fw-bold">{{ form.title.label }}</label>
+                {{ form.title(class="form-control", id="title", placeholder="글 제목", required=True) }}
+                <div class="invalid-feedback">제목을 입력해주세요.</div>
+            </div>
+            <div class="mb-3">
+                <label for="formPrice" class="form-label fw-bold">{{ form.price.label }}</label>
+                <div class="input-group">
+                    <span class="input-group-text">₩</span>
+                    {{ form.price(class="form-control", id="formPrice", placeholder="가격을 입력해주세요.", required=True) }}
+                    <div class="invalid-feedback">가격을 입력해주세요.</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label fw-bold">{{ form.category.label }}</label>
+                {{ form.category(class="form-select", id="category", required=True) }}
+                <div class="invalid-feedback">카테고리를 선택해주세요.</div>
+            </div>
+            <div class="mb-3">
+                <label for="formFileMultiple" class="form-label fw-bold">사진 선택</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="fileNameInput" placeholder="선택된 파일 이름이 여기에 표시됩니다" readonly>
+                    <input type="file" name="files" class="form-control" id="formFileMultiple" multiple style="display: none;">
+                    <button type="button" class="btn btn-outline-primary" id="selectFilesButton">파일 선택</button>
+                </div>
+                <small id="fileCountMessage" class="text-muted">최대 10개의 파일을 선택할 수 있습니다.</small>
+            </div>
+            <div class="mb-3">
+                <label for="textarea" class="form-label fw-bold">{{ form.textarea.label }}</label>
+                {{ form.textarea(class="form-control", id="textarea", rows="5", required=True) }}
+                <div class="invalid-feedback">내용을 입력해주세요.</div>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button id="saveButton" class="btn btn-outline-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    const fileInput = document.getElementById('formFileMultiple');
+    const fileNameInput = document.getElementById('fileNameInput');
+    const selectFilesButton = document.getElementById('selectFilesButton');
+    const fileCountMessage = document.getElementById('fileCountMessage');
+    const maxFiles = 10;
+
+    // 파일 선택 버튼 클릭 시 파일 선택 창 열기
+    selectFilesButton.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // 파일 선택 후 파일 이름 표시
+    fileInput.addEventListener('change', () => {
+      let fileNames = Array.from(fileInput.files).map(file => file.name);
+
+      // 파일 개수 제한 처리
+      if (fileNames.length > maxFiles) {
+        alert(`최대 ${maxFiles}개의 파일만 선택할 수 있습니다.`);
+        const dataTransfer = new DataTransfer();
+        Array.from(fileInput.files)
+          .slice(0, maxFiles)
+          .forEach(file => dataTransfer.items.add(file));
+        fileInput.files = dataTransfer.files;
+        fileNames = Array.from(fileInput.files).map(file => file.name);
+      }
+
+      // 파일 이름 업데이트
+      fileNameInput.value = fileNames.join(', ') || '선택된 파일 없음';
+
+      // 파일 개수 메시지 업데이트
+      fileCountMessage.textContent = `선택된 파일: ${fileInput.files.length}개 / 최대 ${maxFiles}개`;
+    });
+
+
+    // 유효성 검사 후 로딩 중 표시
+    document.querySelector('form').addEventListener('submit', function(event) {
+        if (!this.checkValidity()) {
+            // 폼의 유효성을 검사, 유효하지 않으면 true 반환
+            event.preventDefault(); // 유효성 검사 실패 시 제출 방지
+            this.classList.add('was-validated'); // 유효성 검사 스타일 추가
+            return;
+        }
+        
+        const saveButton = document.getElementById('saveButton');
+        const originalWidth = saveButton.offsetWidth; // 원래 너비 저장
+        saveButton.innerHTML = `
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span class="visually-hidden" role="status">Loading...</span>
+        `;
+        saveButton.style.width = originalWidth + 'px'; // 원래 너비로 설정
+        saveButton.disabled = true; // 버튼 비활성화
+    });
+</script>
+
+{% endblock %}

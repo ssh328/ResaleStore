@@ -1,0 +1,227 @@
+{% extends 'partial/header.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/pagination.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row d-flex align-items-center justify-content-center mt-5 px-3">
+    <div>
+        <div class="d-flex align-items-center mb-5">
+            <img src="{{ user.profile_image_name }}" class="rounded-circle" width="100" height="100" alt="알 수 없음">
+            <h1 class="ms-3">{{ user.name }}</h1>
+        </div>
+    </div>
+    <div class="text-danger text-center">
+        {% include 'partial/flash.html' %}
+    </div>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">판매 물품</button>
+        </li>
+        <li class="nav-item" role="presentation">
+        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">거래 후기</button>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+            <div class="row row row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 mb-5 mt-3">
+                {% for data in all_data %}
+                <div class="col">
+                    <div class="card" style="width: 100%;">
+                        <a class="text-decoration-none text-dark" href="{{ url_for('posts.show_post', post_id=data.id) }}">
+                            <img src="{{ data.img_url.split(',')[0] }}" class="card-img-top card-img-square" alt="">
+                            <div class="card-body py-2">
+                                <h5 class="card-title text-truncate d-inline-block w-100">{{ data.title }}</h5>
+                                <div class="d-flex justify-content-between">
+                                    <p class="card-text mb-1">{{ "{:,.0f}".format(data.price) }} 원</p>
+                                    <p class="card-text mb-1">{{ data.date.strftime('%Y-%m-%d') }}</p>
+                                </div>
+                            </div>
+                        </a>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item py-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-truncate d-inline-block w-100">posted by {{ data.author.name }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <span class="heart_btn increase-cnt-btn me-2" data-post-id="{{ data.id }}">
+                                            {% if data.id in like_posts: %}
+                                            <i class="fa-solid fa-heart fa-bounce" style="color: #ff0000; --fa-animation-iteration-count: 0;"></i>
+                                            {% else %}
+                                            <i class="fa-regular fa-heart" style="color: #000000;"></i>
+                                            {% endif %}
+                                        </span>
+                                        <span id="like-count-{{ data.id }}">
+                                            {{ data.like_cnt }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!--PAGINATION-->
+            <div class="d-flex justify-content-center mb-5">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <!-- 이전 페이지가 있는지 확인 -->
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <!-- 있는 경우 이전 페이지에 대한 링크 생성 -->
+                            <a class="page-link" href="{{ url_for('users.my_post', page=pagination.prev_num) }}">이전</a>
+                        </li>
+                        {% else %}
+                        <!-- 아니라면, 'Previous' 버튼 비활성화 -->
+                        <li class="page-item disabled"><span class="page-link">이전</span></li>
+                        {% endif %}
+
+                        <!-- pagination.iter_pages()에서 제공하는 각 페이지 번호 반복 -->
+                        {% for page_num in pagination.iter_pages() %}
+
+                        <!-- 페이지 번호가 존재하는지 확인 -->
+                        {% if page_num %}
+
+                        <!-- 현재 페이지가 활성 페이지가 아닌지 확인 -->
+                        {% if page_num != pagination.page %}
+                        <!-- 페이지 번호에 대한 클릭 가능한 링크 생성 -->
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('users.my_post', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <!-- 현재 페이지를 활성 페이지로 강조 표시하고 클릭할 수 없음 -->
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+
+                        {% else %}
+                        <!-- 페이지 매기기 링크에 공백이 있는 경우 줄임표를 표시 -->
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- 다음 페이지가 있는지 확인 -->
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <!-- 있는 경우, 다음 페이지에 대한 링크 생성 -->
+                            <a class="page-link" href="{{ url_for('users.my_post', page=pagination.next_num) }}">다음</a>
+                        </li>
+                        {% else %}
+                        <!-- 아니라면 'Next' 버튼 비활성화 -->
+                        <li class="page-item disabled"><span class="page-link">다음</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+            <div class="row">
+                <div class="col-md-6">
+                    {% if logged_in %}
+                    <!-- 리뷰 폼 추가 -->
+                    <form action="{{ url_for('users.reviews', user_name=user.name) }}" method="post" novalidate class="validated-form">
+                        <div class="mb-3">
+                            <label for="reviewText" class="form-label fw-bold mt-3">리뷰 작성</label>
+                            <div class="rating-card mb-2">
+                                <div class="star-rating animated-stars">
+                                    <input type="radio" id="star5" name="rating" value="5">
+                                    <label for="star5" class="bi bi-star-fill"></label>
+                                    <input type="radio" id="star4" name="rating" value="4">
+                                    <label for="star4" class="bi bi-star-fill"></label>
+                                    <input type="radio" id="star3" name="rating" value="3">
+                                    <label for="star3" class="bi bi-star-fill"></label>
+                                    <input type="radio" id="star2" name="rating" value="2">
+                                    <label for="star2" class="bi bi-star-fill"></label>
+                                    <input type="radio" id="star1" name="rating" value="1">
+                                    <label for="star1" class="bi bi-star-fill"></label>
+                                </div>
+                                <p class="text-muted mt-2">별점을 클릭해주세요.</p>
+                            </div>
+                            <textarea class="form-control" id="reviewText" rows="3" name="review" required></textarea> 
+                            <div class="invalid-feedback">리뷰를 입력해주세요.</div>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary">등록</button>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mt-3">
+                    {% for review_data in reviews %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-2">
+                                    <img src="{{ review_data.profile_image }}" class="rounded-circle" width="50" height="50" alt="알 수 없음" class="me-3">
+                                    <div>
+                                        <h5 class="ms-3">{{ review_data.review_writer }}</h5>
+                                        <p class="card-text ms-3">Review: {{ review_data.review }}</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="star-rating-container">
+                                        {% for i in range(review_data.rating) %}
+                                            <i class="bi bi-star-fill" style="color: #ffc107;"></i>
+                                        {% endfor %}
+                                        {% for i in range(5 - review_data.rating) %}
+                                            <i class="bi bi-star-fill" style="color: #ddd;"></i>
+                                        {% endfor %}
+                                    </div>
+                                    {% if current_user and review_data.review_writer == current_user.name %}
+                                    <form action="{{ url_for('users.delete_review', review_id=review_data.review_id) }}" method="POST">
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .star-rating {
+        direction: rtl;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .star-rating input {
+        display: none;
+    }
+
+    .star-rating label {
+        color: #ddd;
+        font-size: 24px;
+        padding: 0 2px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .star-rating label:hover,
+    .star-rating label:hover~label,
+    .star-rating input:checked~label {
+        color: #ffc107;
+    }
+
+</style>
+
+<script>
+    document.querySelectorAll('.star-rating:not(.readonly) label').forEach(star => {
+        star.addEventListener('click', function() {
+            this.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 200);
+        });
+    });
+</script>
+
+<script src="{{ url_for('static', filename='javascripts/like_cnt.js') }}"></script>
+
+{% endblock %}

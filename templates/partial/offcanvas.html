@@ -1,0 +1,64 @@
+<button class="btn btn-outline-primary mb-3" type="button" data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">필터
+</button>
+
+<div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions"
+     aria-labelledby="offcanvasWithBothOptionsLabel">
+    <div class="offcanvas-header pb-0">
+        <h3 class="offcanvas-title fw-bold" id="offcanvasWithBothOptionsLabel">필터</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <hr>
+    <div class="offcanvas-body pt-1">
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{{ url_for('posts.all_products') }}">초기화</a>
+        </div>
+        <h5 class="fw-bold">카테고리</h5>
+        <form action="{{ url_for('posts.all_products') }}" method="GET">
+            {% for category_item in categories %}
+            <div class="form-check">
+                <input value="{{ category_item }}" class="form-check-input category_radio" type="radio" name="category"
+                       id="category_{{ loop.idex }}" {% if category == category_item %} checked {% endif %}>
+                <label class="form-check-label mb-1" for="category_{{ loop.idex }}">
+                    {{ category_item }}
+                </label>
+            </div>
+            {% endfor %}
+            <hr class="my-4">
+
+            <h5 class="fw-bold">정렬</h5>
+            <div class="form-check">
+                <input value="recent" class="form-check-input" type="radio" name="sort_by" id="recent_radio" checked>
+                <label class="form-check-label mb-1" for="recent_radio">
+                    최신순
+                </label>
+            </div>
+            <div class="form-check">
+                <input value="hottest" class="form-check-input" type="radio" name="sort_by" id="popular_radio"
+                {% if sort_by == "hottest" %} checked {% endif %}>
+                <label class="form-check-label mb-1" for="popular_radio">
+                    인기순
+                </label>
+            </div>
+            <hr class="my-4">
+
+            <h5 class="fw-bold">가격</h5>
+            <div class="row align-items-center mb-3">
+                <div class="col-5 px-0">
+                    <input name="start_price" class="form-control form-control-sm" type="number" aria-label="startPrice"
+                    {% if startPrice %} value="{{ startPrice }}" {% endif %}>
+                </div>
+                <div class="col-auto">
+                    <p class="my-1">-</p>
+                </div>
+                <div class="col-5 px-0">
+                    <input name="end_price" class="form-control form-control-sm" type="number" aria-label="endPrice"
+                    {% if endPrice %} value="{{ endPrice }}" {% endif %}>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-outline-primary">적용하기</button>
+            </div>
+        </form>
+    </div>
+</div>

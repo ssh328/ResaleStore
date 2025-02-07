@@ -1,0 +1,38 @@
+{% extends 'partial/header.html' %}
+
+{% block content %}
+<div class="container pb-5">
+    <div class="row d-flex align-items-center justify-content-center mt-5">
+        <div class="text-danger text-center">
+            {% include 'partial/flash.html' %}
+        </div>
+        <h1>계정 삭제</h1>
+        <form action="{{ url_for('users.delete_account') }}" method="POST">
+            {{ form.csrf_token }}
+                {% if authenticated %}
+                    <div class="alert alert-danger text-center" role="alert">
+                        <strong>정말로 계정 삭제를 하시겠습니까?</strong>
+                    </div>
+                    <div class="mb-3 text-center">
+                        <button class="btn btn-outline-danger btn-lg" type="submit">계정 삭제</button>
+                        <a href="{{ url_for('users.profile_edit') }}" class="btn btn-outline-warning btn-lg ms-2">취소</a>
+                    </div>
+                {% else %}
+                    <p>계속하려면 먼저 본인임을 인증하세요.</p>
+                    <div class="mb-3">
+                        {{ form.email(class="form-control", placeholder="Email", required=True) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.password(class="form-control", placeholder="Password", required=True) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.submit(class="btn btn-outline-primary") }}
+                    </div>
+                {% endif %}
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+

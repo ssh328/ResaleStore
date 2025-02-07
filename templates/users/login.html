@@ -1,0 +1,35 @@
+{% extends 'partial/header.html' %}
+
+{% block content %}
+
+<!--Login Content-->
+<div class="container-fluid d-flex align-items-center justify-content-center mt-5 pt-5">
+    <div class="col-md-6 col-lg-6">
+        <h1 class="display-2 login-border-color mb-4" style="font-weight: 500;">Log In</h1>
+        <div class="text-danger text-center">
+            {% include 'partial/flash.html' %}
+        </div>
+        <form class="text-center validated-form" action="{{ url_for('users.login', next=request.args.get('next', '')) }}" method="POST" novalidate>
+            {{ form.csrf_token }}
+            <div class="form-floating mb-1">
+                {{ form.email(class="form-control", placeholder="Email", required=True, id="floatingInput") }}
+                <label for="floatingInput">Email</label>
+                <div class="invalid-feedback">이메일을 입력해주세요.</div>
+            </div>
+            <div class="form-floating mb-3">
+                {{ form.password(class="form-control", placeholder="Password", required=True, id="floatingPassword") }}
+                <label for="floatingPassword">Password</label>
+                <div class="invalid-feedback">비밀번호를 입력해주세요.</div>
+            </div>
+            <div class="mb-1">
+                {{ form.submit(class="btn btn-outline-primary w-100") }}
+            </div>
+            <div>
+                <a class="btn btn-outline-success w-100" href="{{ url_for('users.register') }}">Sign up</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

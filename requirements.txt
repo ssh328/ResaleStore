@@ -1,0 +1,10 @@
+flask
+flask-wtf
+wtforms
+bleach
+flask-login
+flask-socketio
+cloudinary
+sqlalchemy
+werkzeug
+flask-sqlalchemy

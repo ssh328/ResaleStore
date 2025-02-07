@@ -1,0 +1,16 @@
+{% extends 'partial/header.html' %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-4 offset-4">
+        <div class="text-danger text-center">
+            {% include 'partial/flash.html' %}
+        </div>
+        <h1 class="text-center">Test</h1>
+        {% if not logged_in %}
+        <a href="{{ url_for('users.login') }}" class="btn btn-outline-primary w-100 mb-2">Log In</a>
+        <a href="{{ url_for('users.register') }}" class="btn btn-outline-success w-100">Sign Up</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

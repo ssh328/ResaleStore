@@ -1,0 +1,65 @@
+{% extends 'partial/header.html' %}
+
+{% block content %}
+<!--Register Content-->
+<div class="container-fluid d-flex align-items-center justify-content-center mt-5 pt-5">
+    <div class="col-md-6 col-lg-6">
+        <h1 class="display-2 signup-border-color mb-4" style="font-weight: 500;">Sign Up</h1>
+        <form class="text-center validated-form" action="{{ url_for('users.register') }}" method="post" novalidate>
+            {{ form.csrf_token }}
+            <div class="row">
+                <div class="col-6 mb-3 form-floating pe-1">
+                    {{ form.first_name(class="form-control", placeholder="First Name", id="floatingFirstName", required=True) }}
+                    <label class="ms-2" for="floatingFirstName">First Name</label>
+                    <div class="invalid-feedback">First Name을 입력해주세요.</div>
+                </div>
+                <div class="col-6 mb-3 form-floating ps-1">
+                    {{ form.last_name(class="form-control", placeholder="Last Name", id="floatingLastName", required=True) }}
+                    <label class="me-1" for="floatingLastName">Last Name</label>
+                    <div class="invalid-feedback">Last Name을 입력해주세요.</div>
+                </div>
+            </div>
+            <div class="mb-3 form-floating">
+                {{ form.name(class="form-control", placeholder="Username", id="floatingName", required=True) }}
+                <label for="floatingName">Username</label>
+                <div class="invalid-feedback">Username을 입력해주세요.</div>
+            </div>
+            <div class="mb-3 form-floating">
+                {{ form.email(class="form-control", placeholder="Email", id="floatingEmail", required=True) }}
+                <label for="floatingEmail">Email</label>
+                <div class="invalid-feedback">이메일을 입력해주세요.</div>
+            </div>
+            <div class="mb-3 form-floating">
+                {{ form.password(class="form-control", placeholder="Password", id="floatingPassword", required=True) }}
+                <label for="floatingPassword">Password</label>
+                <div class="invalid-feedback">비밀번호를 입력해주세요.</div>
+            </div>
+            <div>
+                {{ form.submit(class="btn btn-outline-primary w-100") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+<!--    <div class="box">-->
+<!--        <h1 class="display-1 text-center signup-border-color" style="font-weight: 500;">Sign Up</h1>-->
+<!--        <div class="box-form">-->
+<!--            <form action="{{ url_for('register') }}" method="post">-->
+<!--                {{ form.csrf_token }}-->
+<!--                <p>-->
+<!--                    {{ form.name(placeholder="Name") }}-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    {{ form.email(placeholder="Email") }}-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    {{ form.password(placeholder="Password") }}-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    {{ form.submit(class="btn btn-outline-primary") }}-->
+<!--                </p>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
