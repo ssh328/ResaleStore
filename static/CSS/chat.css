@@ -19,13 +19,9 @@
 }
 
 #messages {
-    list-style: none;
-    padding: 0;
+    list-style-type: none;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow-y: auto;
+    padding: 0;
 }
 
 #message-box {
@@ -47,69 +43,81 @@
 }
 
 .my-message-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin: 0;
-  padding: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    margin-bottom: 10px;
+    gap: 8px;
 }
 
 .other-message-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin: 0;
-  padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 10px;
 }
 
 .sender-name {
-  font-size: 0.8em;
-  color: #666;
-  margin-bottom: 2px;
+    font-size: 0.8em;
+    color: #666;
+    margin-bottom: 2px;
 }
 
 .message-text {
-  padding: 6px 10px;
-  border-radius: 15px;
-  max-width: 70%;
-  word-wrap: break-word;
+    background-color: #f0f2f5;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 70%;
+    word-wrap: break-word;
 }
 
 .my-message-container .message-text {
-  background-color: #007bff;
-  color: white;
+    background-color: #0084ff;
+    color: white;
 }
 
 .other-message-container .message-text {
-  background-color: white;
-  color: black;
+    background-color: white;
+    color: black;
 }
 
 .message-time {
-  font-size: 0.8em;
-  color: #888;
-  display: block;
-  margin-top: 4px;
+    font-size: 0.75em;
+    color: #666;
+    margin-top: 2px;
 }
 
 /* 날짜 구분선 */
 .date-divider {
-  text-align: center;
-  margin: 20px 0;
-  position: relative;
-  font-size: 0.9em;
-  color: #666;
+    text-align: center;
+    color: #666;
+    font-size: 0.8em;
+    margin: 20px 0;
+    position: relative;
+}
+
+.date-divider::before,
+.date-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.date-divider::before {
+    left: 0;
+}
+
+.date-divider::after {
+    right: 0;
 }
 
 .status-divider {
     text-align: center;
-    margin: 10px 0;
-    padding: 5px;
-    font-size: 0.9em;
     color: #666;
-    background-color: #f0f0f0;
-    border-radius: 15px;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
+    font-size: 0.8em;
+    margin: 10px 0;
+    font-style: italic;
 }

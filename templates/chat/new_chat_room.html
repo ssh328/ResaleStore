@@ -1,0 +1,268 @@
+{% extends 'partial/header.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/chat.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<style>
+    .chat-container {
+        height: calc(100vh - 100px);
+        margin-top: 20px;
+    }
+
+    .chat-list {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: 100%;
+        overflow-y: auto;
+    }
+    
+    .chat-room-item {
+        transition: background-color 0.2s;
+    }
+
+    .chat-room-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .text-truncate {
+        max-width: 250px;
+    }
+
+    #chat-room-widget {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #msgs-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    #message-box {
+        padding: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    #message-box input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .chat-header {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        background-color: #f8f9fa;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .active-chat {
+        background-color: #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid chat-container">
+    <div class="row h-100">
+        <!-- 채팅방 목록 -->
+        <div class="col-md-4">
+            <div class="chat-list">
+                <div class="p-3 border-bottom">
+                    <h5 class="mb-0">채팅 목록</h5>
+                </div>
+                {% for room in chat_room_list %}
+                    {% if room.room_check == True %}
+                        <a href="{{ url_for('chatting.chat', receive_user_id=room.receive_user_id, room_id=room.room_id, receive_user_name=room.receiver_name) }}" 
+                           class="chat-room-item text-decoration-none {% if room.room_id == room_id %}active-chat{% endif %}">
+                            <div class="d-flex align-items-center p-3 border-bottom">
+                                <div class="position-relative">
+                                    {% if room.other_user_profile %}
+                                        <img src="{{room.other_user_profile}}" class="rounded-circle" width="50" height="50" alt="프로필">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/default_profile.png') }}" class="rounded-circle" width="50" height="50" alt="기본 프로필">
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 text-dark">{{ room.email }}</h6>
+                                        <small class="text-muted">{{ room.message_time }}</small>
+                                    </div>
+                                    <p class="mb-0 text-muted text-truncate">{{ room.latest_message }}</p>
+                                </div>
+                            </div>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 채팅 창 -->
+        <div class="col-md-8">
+            {% if room_id %}
+            <div id="chat-room-widget">
+                <div class="chat-header">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">{{ receive_user_name }}</h6>
+                    </div>
+                </div>
+                <div id="msgs-container">
+                    <ul id="messages"></ul>
+                </div>
+                <div id="message-box">
+                    <input type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
+                </div>
+            </div>
+            {% else %}
+            <div class="d-flex align-items-center justify-content-center h-100">
+                <p class="text-muted">채팅방을 선택해주세요.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if room_id %}
+<script type="text/javascript">
+    let socket = io();
+    let current_user = "{{ user }}";
+    let room_id = "{{ room_id }}";
+    let receive_username = "{{ receive_user_name }}";
+    let receive_user_id = "{{ receive_user_id }}";
+
+    socket.on("connect", () => {
+        console.log('Socket.IO connected!');
+        socket.emit("join", {
+            "current_user": current_user,
+            "room_id": room_id
+        });
+    });
+
+    socket.on('status', function (data) {
+        const messages = document.getElementById('messages');
+        const li = document.createElement('li');
+        const statusDiv = document.createElement('div');
+        
+        statusDiv.classList.add('status-divider');
+        statusDiv.textContent = data.data;
+        
+        li.appendChild(statusDiv);
+        messages.appendChild(li);
+        
+        const msgsContainer = document.getElementById('msgs-container');
+        msgsContainer.scrollTop = msgsContainer.scrollHeight;
+    });
+
+    const input = document.getElementById('text');
+    input.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            const message = input.value;
+            if (message.trim()) {
+                input.value = '';
+                socket.emit('message', {
+                    'message': message,
+                    'current_user': current_user,
+                    'room_id': room_id,
+                    'receive_user_name': receive_username
+                });
+            }
+        }
+    });
+
+    let lastDate = null;
+
+    function createDateDivider(messageDate) {
+        const messages = document.getElementById('messages');
+        const li = document.createElement('li');
+        const dateDiv = document.createElement('div');
+        
+        dateDiv.classList.add('date-divider');
+        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+        dateDiv.textContent = messageDate.toLocaleDateString('ko-KR', options);
+        
+        li.appendChild(dateDiv);
+        messages.appendChild(li);
+    }
+
+    function createChatItem(sender_name, text, receive_user_name, timestamp = null) {
+        const messageDate = timestamp ? new Date(timestamp) : new Date();
+        
+        const currentDate = messageDate.toDateString();
+        if (lastDate !== currentDate) {
+            createDateDivider(messageDate);
+            lastDate = currentDate;
+        }
+
+        const messages = document.getElementById('messages');
+        const li = document.createElement('li');
+        const messageContainer = document.createElement('div');
+        const nameSpan = document.createElement('span');
+        const textSpan = document.createElement('span')
+        const timeSpan = document.createElement('span');
+        const msgsContainer = document.getElementById('msgs-container');
+
+        const hours = messageDate.getHours();
+        const minutes = messageDate.getMinutes();
+        const ampm = hours >= 12 ? '오후' : '오전';
+        const formattedHours = hours % 12 || 12;
+        const formattedTime = `${ampm} ${formattedHours}:${minutes.toString().padStart(2, '0')}`;
+
+        timeSpan.classList.add('message-time');
+        timeSpan.textContent = formattedTime;
+        
+        const isScrolledToBottom = msgsContainer.scrollHeight - msgsContainer.clientHeight - msgsContainer.scrollTop <= 10;
+        
+        nameSpan.classList.add('sender-name');
+        textSpan.classList.add('message-text');
+        
+        if (sender_name === current_user) {
+            messageContainer.classList.add('my-message-container');
+            textSpan.textContent = text;
+            messageContainer.appendChild(textSpan);
+            messageContainer.appendChild(timeSpan);
+            setTimeout(() => {
+                msgsContainer.scrollTop = msgsContainer.scrollHeight;
+            }, 0);
+        } else {
+            messageContainer.classList.add('other-message-container');
+            textSpan.textContent = text;
+            nameSpan.textContent = sender_name;
+            messageContainer.appendChild(nameSpan);
+            messageContainer.appendChild(textSpan);
+            messageContainer.appendChild(timeSpan);
+            if (isScrolledToBottom) {
+                setTimeout(() => {
+                    msgsContainer.scrollTop = msgsContainer.scrollHeight;
+                }, 0);
+            }
+        }
+        
+        li.appendChild(messageContainer);
+        messages.appendChild(li);
+    }
+
+    socket.on('message', function (data) {
+        createChatItem(data.sender_name, data.text, data.receive_user_name, data.timestamp)
+    });
+</script>
+
+{% for message in messages %}
+<script type="text/javascript">
+    createChatItem(
+        "{{ message.sender_name }}", 
+        "{{ message.text }}", 
+        "{{ message.receive_user_name }}", 
+        "{{ message.time.isoformat() }}"
+    );
+</script>
+{% endfor %}
+{% endif %}
+
+{% endblock %}
