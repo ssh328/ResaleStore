@@ -84,6 +84,7 @@ def get_chat_rooms():
         
     return chat_room_list
 
+
 # 채팅 페이지
 @chatting.route('/get_messages/<string:receive_user_id>', methods=['GET', 'POST'])
 @admin_only
@@ -97,10 +98,11 @@ def chat(receive_user_id):
 
     if request.method == 'POST':
         data = request.get_json()
-            
         # 데이터 추출
         room_id = data.get('room_id')
         receive_user_name = data.get('receive_user_name')
+        print(room_id)
+        print(receive_user_name)
 
     # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
     room = Room.query.filter(

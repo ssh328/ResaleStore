@@ -232,27 +232,26 @@
     document.querySelectorAll('.chat-room-item').forEach(item => {
         item.addEventListener('click', function() {
             // 데이터 속성에서 값 가져오기
-            const roomId = this.dataset.roomId;
-            const receiveUserId = this.dataset.receiveUserId;
-            const receiveUserName = this.dataset.receiveUserName;
+            const roomId = this.getAttribute('data-room-id');  // 또는 this.dataset.roomId
+            const receiveUserId = this.getAttribute('data-receive-user-id');  // 또는 this.dataset.receiveUserId
+            const receiveUserName = this.getAttribute('data-receive-user-name');  // 또는 this.dataset.receiveUserName
 
             // AJAX를 사용하여 서버로 데이터 전송
-            fetch(`/get_messages/${receiveUserId}`, {
+            fetch(`/chat/get_messages/${receiveUserId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     room_id: roomId,
-                    receive_user_id: receiveUserId,
                     receive_user_name: receiveUserName
                 })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
+                if (data) {
                     // 성공 시 채팅방으로 이동
-                    console.log(`성공 ${data}`);
+                    console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
                 } else {
                     // 실패 시 에러 메시지 표시
                     alert('채팅방 입장에 실패했습니다.');
