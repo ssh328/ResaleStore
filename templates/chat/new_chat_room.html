@@ -48,176 +48,178 @@
         </div>
 
         <div class="col-md-6" id="chat-room-widget">
-            <div class="empty-chat-placeholder">
-                <p class="text-center text-muted">채팅방을 선택해주세요</p>
-            </div>
-            <div class="chat-content">
-                <div id="msgs-container">
-                    <ul id="messages"></ul>
+            <div id="chat-room-widget-content" style="display: none;">
+                <div class="empty-chat-placeholder">
+                    <p class="text-center text-muted">채팅방을 선택해주세요</p>
                 </div>
-                <div id="message-box">
-                    <input type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
-                </div>
-                <div class="text-center mt-3">
-                    <a href="/chat_room" class="btn btn-outline-danger btn-sm" id="leave_chat_btn">채팅방 나가기</a>
+                <div class="chat-content">
+                    <div id="msgs-container">
+                        <ul id="messages"></ul>
+                    </div>
+                    <div id="message-box">
+                        <input type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="/chat_room" class="btn btn-outline-danger btn-sm" id="leave_chat_btn">채팅방 나가기</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript"> 
+<script type="text/javascript">
+
+
     let socket = io();
     let current_user = "{{ user }}";
     let room_id = "{{ room_id }}";
     let receive_username = "{{ receive_user_name }}";
     let receive_user_id = "{{ receive_user_id }}";
 
-    socket.on("connect", () => {
-        console.log('Socket.IO connected!');
-        console.log(current_user);
+    // socket.on("connect", () => {
+    //     console.log('Socket.IO connected!');
+    //     console.log(current_user);
+    //     socket.emit("join", {
+    //                 "current_user": current_user,
+    //                 "room_id": room_id
+    //                 });
+    // });
 
-        socket.emit("join", {
-        "current_user": current_user,
-        "room_id": room_id
-        });
-
-    });
-
-    socket.on('status', function (data) {
-        const messages = document.getElementById('messages');
-        const li = document.createElement('li');
-        const statusDiv = document.createElement('div');
+    // socket.on('status', function (data) {
+    //     const messages = document.getElementById('messages');
+    //     const li = document.createElement('li');
+    //     const statusDiv = document.createElement('div');
         
-        statusDiv.classList.add('status-divider');
-        statusDiv.textContent = data.data;
+    //     statusDiv.classList.add('status-divider');
+    //     statusDiv.textContent = data.data;
         
-        li.appendChild(statusDiv);
-        messages.appendChild(li);
+    //     li.appendChild(statusDiv);
+    //     messages.appendChild(li);
         
-        const msgsContainer = document.getElementById('msgs-container');
-        msgsContainer.scrollTop = msgsContainer.scrollHeight;
-    });
+    //     const msgsContainer = document.getElementById('msgs-container');
+    //     msgsContainer.scrollTop = msgsContainer.scrollHeight;
+    // });
 
-    const input = document.getElementById('text');
-    input.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            const message = input.value;
-            input.value = ''
-            socket.emit('message', {
-            'message': message,
-            'current_user': current_user,
-            'room_id': room_id,
-            'receive_user_name': receive_username
-            });
-        }
-    });
+    // const input = document.getElementById('text');
+    // input.addEventListener('keypress', (event) => {
+    //     if (event.key === 'Enter') {
+    //         const message = input.value;
+    //         input.value = ''
+    //         socket.emit('message', {
+    //         'message': message,
+    //         'current_user': current_user,
+    //         'room_id': room_id,
+    //         'receive_user_name': receive_username
+    //         });
+    //     }
+    // });
 
     // 마지막으로 표시된 날짜를 저장하는 전역 변수
     // 새로운 날짜가 표시될 때마다 날짜 구분선 추가
-    let lastDate = null;
+    // let lastDate = null;
 
-    // 날짜 구분선 추가 함수
-    function createDateDivider(messageDate) {
-        // messages 요소 참조
-        const messages = document.getElementById('messages');
+    // // 날짜 구분선 추가 함수
+    // function createDateDivider(messageDate) {
+    //     // messages 요소 참조
+    //     const messages = document.getElementById('messages');
 
-        // 새로운 li와 div 요소 생성
-        const li = document.createElement('li');
-        const dateDiv = document.createElement('div');
+    //     // 새로운 li와 div 요소 생성
+    //     const li = document.createElement('li');
+    //     const dateDiv = document.createElement('div');
         
-        // date-divider 클래스 추가하여 스타일 적용
-        dateDiv.classList.add('date-divider');
+    //     // date-divider 클래스 추가하여 스타일 적용
+    //     dateDiv.classList.add('date-divider');
 
-        // 날짜 형식 설정
-        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+    //     // 날짜 형식 설정
+    //     const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
 
-        // 날짜 한국어 형식으로 변환
-        dateDiv.textContent = messageDate.toLocaleDateString('ko-KR', options);
+    //     // 날짜 한국어 형식으로 변환
+    //     dateDiv.textContent = messageDate.toLocaleDateString('ko-KR', options);
         
-        // li 요소에 dateDiv 추가
-        li.appendChild(dateDiv);
+    //     // li 요소에 dateDiv 추가
+    //     li.appendChild(dateDiv);
 
-        // messages 요소에 li 추가
-        messages.appendChild(li);
-    }
+    //     // messages 요소에 li 추가
+    //     messages.appendChild(li);
+    // }
 
-    function createChatItem(sender_name, text, receive_user_name, timestamp = null) {
-        // timestamp가 있으면 timestamp를 사용하고, 없으면 현재 시간을 사용
-        const messageDate = timestamp ? new Date(timestamp) : new Date();
+    // function createChatItem(sender_name, text, receive_user_name, timestamp = null) {
+    //     // timestamp가 있으면 timestamp를 사용하고, 없으면 현재 시간을 사용
+    //     const messageDate = timestamp ? new Date(timestamp) : new Date();
         
-        // 날짜가 변경되었거나 첫 메시지인 경우 날짜 구분선 추가
-        const currentDate = messageDate.toDateString();
-        if (lastDate !== currentDate) {
-            createDateDivider(messageDate);
-            lastDate = currentDate;
-        }
+    //     // 날짜가 변경되었거나 첫 메시지인 경우 날짜 구분선 추가
+    //     const currentDate = messageDate.toDateString();
+    //     if (lastDate !== currentDate) {
+    //         createDateDivider(messageDate);
+    //         lastDate = currentDate;
+    //     }
 
-        // DOM 요소 생성 및 참조
-        const messages = document.getElementById('messages');
-        const li = document.createElement('li');
-        const messageContainer = document.createElement('div');
-        const nameSpan = document.createElement('span');
-        const textSpan = document.createElement('span')
-        const timeSpan = document.createElement('span'); // 시간 표시를 위한 새로운 span
-        const msgsContainer = document.getElementById('msgs-container');
+    //     // DOM 요소 생성 및 참조
+    //     const messages = document.getElementById('messages');
+    //     const li = document.createElement('li');
+    //     const messageContainer = document.createElement('div');
+    //     const nameSpan = document.createElement('span');
+    //     const textSpan = document.createElement('span')
+    //     const timeSpan = document.createElement('span'); // 시간 표시를 위한 새로운 span
+    //     const msgsContainer = document.getElementById('msgs-container');
 
-        // 현재 시간 가져오기
-        const now = new Date();
-        const hours = messageDate.getHours();
-        const minutes = messageDate.getMinutes();
-        const ampm = hours >= 12 ? '오후' : '오전';
-        const formattedHours = hours % 12 || 12;
-        const formattedTime = `${ampm} ${formattedHours}:${minutes.toString().padStart(2, '0')}`;
+    //     // 현재 시간 가져오기
+    //     const now = new Date();
+    //     const hours = messageDate.getHours();
+    //     const minutes = messageDate.getMinutes();
+    //     const ampm = hours >= 12 ? '오후' : '오전';
+    //     const formattedHours = hours % 12 || 12;
+    //     const formattedTime = `${ampm} ${formattedHours}:${minutes.toString().padStart(2, '0')}`;
 
-        // 시간 스타일 클래스 추가
-        timeSpan.classList.add('message-time');
-        timeSpan.textContent = formattedTime;
+    //     // 시간 스타일 클래스 추가
+    //     timeSpan.classList.add('message-time');
+    //     timeSpan.textContent = formattedTime;
         
-        // 현재 스크롤이 거의 맨 아래인지 확인 (여유값 10px)
-        const isScrolledToBottom = msgsContainer.scrollHeight - msgsContainer.clientHeight - msgsContainer.scrollTop <= 10;
+    //     // 현재 스크롤이 거의 맨 아래인지 확인 (여유값 10px)
+    //     const isScrolledToBottom = msgsContainer.scrollHeight - msgsContainer.clientHeight - msgsContainer.scrollTop <= 10;
         
-        // 메시지 스타일 클래스 추가
-        nameSpan.classList.add('sender-name');
-        textSpan.classList.add('message-text');
+    //     // 메시지 스타일 클래스 추가
+    //     nameSpan.classList.add('sender-name');
+    //     textSpan.classList.add('message-text');
         
-        if (sender_name === current_user) {
-            // 내가 보낸 메시지인 경우
-            messageContainer.classList.add('my-message-container');
-            textSpan.textContent = text;
-            messageContainer.appendChild(textSpan);
-            messageContainer.appendChild(timeSpan); // 내 메시지의 경우 시간을 오른쪽에 표시
-            // 내가 보낸 메시지는 항상 자동 스크롤로 최신 메시지 표시
-            setTimeout(() => {
-                msgsContainer.scrollTop = msgsContainer.scrollHeight;
-            }, 0);
-        } else {
-            // 상대방이 보낸 메시지인 경우
-            messageContainer.classList.add('other-message-container');
-            textSpan.textContent = text;
-            nameSpan.textContent = sender_name;
-            messageContainer.appendChild(nameSpan);
-            messageContainer.appendChild(textSpan);
-            messageContainer.appendChild(timeSpan); // 상대방 메시지의 경우에도 시간 표시 
-            // 사용자가 스크롤을 맨 아래에 위치시켰을 때만 자동 스크롤 실행
-            if (isScrolledToBottom) {
-                setTimeout(() => {
-                    msgsContainer.scrollTop = msgsContainer.scrollHeight;
-                }, 0);
-            }
-        }
+    //     if (sender_name === current_user) {
+    //         // 내가 보낸 메시지인 경우
+    //         messageContainer.classList.add('my-message-container');
+    //         textSpan.textContent = text;
+    //         messageContainer.appendChild(textSpan);
+    //         messageContainer.appendChild(timeSpan); // 내 메시지의 경우 시간을 오른쪽에 표시
+    //         // 내가 보낸 메시지는 항상 자동 스크롤로 최신 메시지 표시
+    //         setTimeout(() => {
+    //             msgsContainer.scrollTop = msgsContainer.scrollHeight;
+    //         }, 0);
+    //     } else {
+    //         // 상대방이 보낸 메시지인 경우
+    //         messageContainer.classList.add('other-message-container');
+    //         textSpan.textContent = text;
+    //         nameSpan.textContent = sender_name;
+    //         messageContainer.appendChild(nameSpan);
+    //         messageContainer.appendChild(textSpan);
+    //         messageContainer.appendChild(timeSpan); // 상대방 메시지의 경우에도 시간 표시 
+    //         // 사용자가 스크롤을 맨 아래에 위치시켰을 때만 자동 스크롤 실행
+    //         if (isScrolledToBottom) {
+    //             setTimeout(() => {
+    //                 msgsContainer.scrollTop = msgsContainer.scrollHeight;
+    //             }, 0);
+    //         }
+    //     }
         
-        messageContainer.appendChild(nameSpan);
-        messageContainer.appendChild(textSpan);
-        messageContainer.appendChild(timeSpan);
-        li.appendChild(messageContainer);
-        messages.appendChild(li);
-    }
+    //     messageContainer.appendChild(nameSpan);
+    //     messageContainer.appendChild(textSpan);
+    //     messageContainer.appendChild(timeSpan);
+    //     li.appendChild(messageContainer);
+    //     messages.appendChild(li);
+    // }
 
-    // 서버에서 받은 메시지 처리
-    socket.on('message', function (data) {
-        createChatItem(data.sender_name, data.text, data.receive_user_name, data.timestamp)
-    });
+    // // 서버에서 받은 메시지 처리
+    // socket.on('message', function (data) {
+    //     createChatItem(data.sender_name, data.text, data.receive_user_name, data.timestamp)
+    // });
 
     const leave_btn = document.getElementById('leave_chat_btn');
     leave_btn.addEventListener('click', () => {
@@ -231,6 +233,14 @@
     // 채팅방 목록 클릭 이벤트 처리
     document.querySelectorAll('.chat-room-item').forEach(item => {
         item.addEventListener('click', function() {
+
+            // 채팅 위젯 표시
+            document.getElementById('chat-room-widget-content').style.display = 'block';
+            // empty-chat-placeholder 숨기기
+            document.querySelector('.empty-chat-placeholder').style.display = 'none';
+            // chat-content 표시
+            document.querySelector('.chat-content').style.display = 'block';
+
             // 데이터 속성에서 값 가져오기
             const roomId = this.getAttribute('data-room-id');  // 또는 this.dataset.roomId
             const receiveUserId = this.getAttribute('data-receive-user-id');  // 또는 this.dataset.receiveUserId
@@ -261,11 +271,180 @@
                 console.error('Error:', error);
                 alert('오류가 발생했습니다.');
             });
+
+            // 서버에서 데이터 가져오기
+            fetch(`/chat/get_messages/${receiveUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(`데이터 가져옴 ${data.room_id}, ${data.receive_user_name}`);
+
+                let CURRENT_USER = data.current_user;
+
+                // 기존 메시지 초기화
+                document.getElementById('messages').innerHTML = '';
+
+
+                socket.emit("join", {
+                    "current_user": CURRENT_USER,
+                    "room_id": data.room_id
+                    });
+
+                socket.on('status', function (data) {
+                    const messages = document.getElementById('messages');
+                    const li = document.createElement('li');
+                    const statusDiv = document.createElement('div');
+                    
+                    statusDiv.classList.add('status-divider');
+                    statusDiv.textContent = data.data;
+                    
+                    li.appendChild(statusDiv);
+                    messages.appendChild(li);
+                    
+                    const msgsContainer = document.getElementById('msgs-container');
+                    msgsContainer.scrollTop = msgsContainer.scrollHeight;
+                });
+
+
+                const input = document.getElementById('text');
+                input.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        const message = input.value;
+                        input.value = ''
+                        socket.emit('message', {
+                        'message': message,
+                        'current_user': CURRENT_USER,
+                        'room_id': data.room_id,
+                        'receive_user_name': data.receive_user_name
+                        });
+                    }
+                });
+
+                let lastDate = null;
+                // 날짜 구분선 추가 함수
+                function createDateDivider(messageDate) {
+                    // messages 요소 참조
+                    const messages = document.getElementById('messages');
+
+                    // 새로운 li와 div 요소 생성
+                    const li = document.createElement('li');
+                    const dateDiv = document.createElement('div');
+                    
+                    // date-divider 클래스 추가하여 스타일 적용
+                    dateDiv.classList.add('date-divider');
+
+                    // 날짜 형식 설정
+                    const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+
+                    // 날짜 한국어 형식으로 변환
+                    dateDiv.textContent = messageDate.toLocaleDateString('ko-KR', options);
+                    
+                    // li 요소에 dateDiv 추가
+                    li.appendChild(dateDiv);
+
+                    // messages 요소에 li 추가
+                    messages.appendChild(li);
+                }
+
+
+                function createChatItem(sender_name, text, receive_user_name, timestamp = null) {
+                    // timestamp가 있으면 timestamp를 사용하고, 없으면 현재 시간을 사용
+                    const messageDate = timestamp ? new Date(timestamp) : new Date();
+                    
+                    // 날짜가 변경되었거나 첫 메시지인 경우 날짜 구분선 추가
+                    const currentDate = messageDate.toDateString();
+                    if (lastDate !== currentDate) {
+                        createDateDivider(messageDate);
+                        lastDate = currentDate;
+                    }
+
+                    // DOM 요소 생성 및 참조
+                    const messages = document.getElementById('messages');
+                    const li = document.createElement('li');
+                    const messageContainer = document.createElement('div');
+                    const nameSpan = document.createElement('span');
+                    const textSpan = document.createElement('span')
+                    const timeSpan = document.createElement('span'); // 시간 표시를 위한 새로운 span
+                    const msgsContainer = document.getElementById('msgs-container');
+
+                    // 현재 시간 가져오기
+                    const now = new Date();
+                    const hours = messageDate.getHours();
+                    const minutes = messageDate.getMinutes();
+                    const ampm = hours >= 12 ? '오후' : '오전';
+                    const formattedHours = hours % 12 || 12;
+                    const formattedTime = `${ampm} ${formattedHours}:${minutes.toString().padStart(2, '0')}`;
+
+                    // 시간 스타일 클래스 추가
+                    timeSpan.classList.add('message-time');
+                    timeSpan.textContent = formattedTime;
+                    
+                    // 현재 스크롤이 거의 맨 아래인지 확인 (여유값 10px)
+                    const isScrolledToBottom = msgsContainer.scrollHeight - msgsContainer.clientHeight - msgsContainer.scrollTop <= 10;
+                    
+                    // 메시지 스타일 클래스 추가
+                    nameSpan.classList.add('sender-name');
+                    textSpan.classList.add('message-text');
+                    
+                    if (sender_name === CURRENT_USER) {
+                        // 내가 보낸 메시지인 경우
+                        messageContainer.classList.add('my-message-container');
+                        textSpan.textContent = text;
+                        messageContainer.appendChild(textSpan);
+                        messageContainer.appendChild(timeSpan); // 내 메시지의 경우 시간을 오른쪽에 표시
+                        // 내가 보낸 메시지는 항상 자동 스크롤로 최신 메시지 표시
+                        setTimeout(() => {
+                            msgsContainer.scrollTop = msgsContainer.scrollHeight;
+                        }, 0);
+                    } else {
+                        // 상대방이 보낸 메시지인 경우
+                        messageContainer.classList.add('other-message-container');
+                        textSpan.textContent = text;
+                        nameSpan.textContent = sender_name;
+                        messageContainer.appendChild(nameSpan);
+                        messageContainer.appendChild(textSpan);
+                        messageContainer.appendChild(timeSpan); // 상대방 메시지의 경우에도 시간 표시 
+                        // 사용자가 스크롤을 맨 아래에 위치시켰을 때만 자동 스크롤 실행
+                        if (isScrolledToBottom) {
+                            setTimeout(() => {
+                                msgsContainer.scrollTop = msgsContainer.scrollHeight;
+                            }, 0);
+                        }
+                    }
+                    
+                    messageContainer.appendChild(nameSpan);
+                    messageContainer.appendChild(textSpan);
+                    messageContainer.appendChild(timeSpan);
+                    li.appendChild(messageContainer);
+                    messages.appendChild(li);
+                }
+
+                // 서버에서 받은 메시지 처리
+                socket.on('message', function (dt) {
+                    createChatItem(dt.sender_name, dt.text, dt.receive_user_name, dt.timestamp)
+                });
+
+
+                // 이전 메시지들 표시
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(message => {
+                        createChatItem(
+                            message.sender_name,
+                            message.text,
+                            message.receive_user_name,
+                            message.time
+                        );
+                    });
+                }
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         });
     });
 </script>
 
-{% for message in messages %}
+<!-- {% for message in messages %}
 <script type="text/javascript">
     createChatItem(
         "{{ message.sender_name }}", 
@@ -274,7 +453,7 @@
         "{{ message.time.isoformat() }}"
     );
 </script>
-{% endfor %}
+{% endfor %} -->
 
 <style>
     .chat-room-list {

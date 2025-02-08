@@ -62,7 +62,7 @@ def get_chat_rooms():
         # 최신 메시지 가져오기
         latest_message = Message.query.filter_by(room_id=room_check.id).order_by(Message.time.desc()).first()
 
-        message_time = latest_message.time.strftime('%Y-%m-%d')
+        message_time = latest_message.time.strftime('%Y-%m-%d') if latest_message else None
         
         # 채팅방 상태 확인
         is_sender = user_id == room_check.sender_id
@@ -74,7 +74,7 @@ def get_chat_rooms():
             'room_id': room_check.id,
             'room_check': room_status,
             'receiver_name': other_user.name if other_user else 'Unknown',
-            'latest_message': latest_message.text,
+            'latest_message': latest_message.text if latest_message else None,
             'message_time': message_time,
             'other_user_profile': other_user.profile_image_name if other_user else None,
         }
@@ -90,19 +90,19 @@ def get_chat_rooms():
 @admin_only
 def chat(receive_user_id):
     # receive_user_id: 메시지를 받게 되는 사람
-    receive_user_id = receive_user_id
 
+    # receive_user의 이름을 데이터베이스에서 조회
+    receive_user = User.query.get(receive_user_id)
+    receive_user_name = receive_user.name if receive_user else None
+    
     if request.method == 'GET':
-        receive_user_name = request.args.get('receive_user_name')
         room_id = request.args.get('room_id')
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         data = request.get_json()
         # 데이터 추출
         room_id = data.get('room_id')
-        receive_user_name = data.get('receive_user_name')
         print(room_id)
-        print(receive_user_name)
 
     # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
     room = Room.query.filter(
@@ -157,7 +157,8 @@ def chat(receive_user_id):
                 } for message in messages
             ],
             'logged_in': current_user.is_authenticated,
-            'receive_user_id': receive_user_id
+            'receive_user_id': receive_user_id,
+            'current_user': current_user.name
         })
 
     elif current_user.id == chat_room.receiver_id:
@@ -186,7 +187,8 @@ def chat(receive_user_id):
                 } for message in messages
             ],
             'logged_in': current_user.is_authenticated,
-            'receive_user_id': receive_user_id
+            'receive_user_id': receive_user_id,
+            'current_user': current_user.name
         })
 
 @socketio.on("connect")
@@ -198,6 +200,9 @@ def test_connect():
 def join(data):
     room = data['room_id']
     name = data['current_user']
+    current_user = data['current_user']
+    print(f"조인함: {room}")
+    print(f"조인함: {current_user}")
     join_room(room)
 
 
