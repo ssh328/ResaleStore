@@ -35,6 +35,8 @@ def chat_room():
                           chat_room_list=get_chat_rooms(),
                           logged_in=current_user.is_authenticated)
 
+
+
 # 채팅방 목록 가져오기
 def get_chat_rooms():
     user_id = current_user.id
@@ -158,7 +160,11 @@ def chat(receive_user_id):
             ],
             'logged_in': current_user.is_authenticated,
             'receive_user_id': receive_user_id,
-            'current_user': current_user.name
+            'current_user': {
+                'id': current_user.id,
+                'name': current_user.name,
+                'email': current_user.email
+            }  # current_user 객체를 직접 전달하지 않고 필요한 속성만 딕셔너리로 전달
         })
 
     elif current_user.id == chat_room.receiver_id:
@@ -188,7 +194,11 @@ def chat(receive_user_id):
             ],
             'logged_in': current_user.is_authenticated,
             'receive_user_id': receive_user_id,
-            'current_user': current_user.name
+            'current_user': {
+                'id': current_user.id,
+                'name': current_user.name,
+                'email': current_user.email
+            }  # current_user 객체를 직접 전달하지 않고 필요한 속성만 딕셔너리로 전달
         })
 
 @socketio.on("connect")
@@ -212,7 +222,7 @@ def handle_message(data):
     name = data['current_user']
     message = data['message']
     receive_user_name = data['receive_user_name']
-    # print('received message: ' + message)
+    print('received message: ' + message)
     # print(receive_user_name)
     current_time = datetime.now()
 
@@ -232,10 +242,12 @@ def handle_message(data):
 
     # 저장된 타임스탬프를 사용하여 메시지 전송
     emit('message', {
-        'sender_name': name, 
+        # 'sender_name': name,
+        'sender_name': new_message.sender_name,
         'text': message, 
         'receive_user_name': receive_user_name,
-        'timestamp': current_time.isoformat()  # 저장된 시간 사용
+        'timestamp': current_time.isoformat(),  # 저장된 시간 사용
+        'room_id': room
     }, to=room)
     # print(f"saved_message.time.isoformat(): {saved_message.time.isoformat()}")
 
