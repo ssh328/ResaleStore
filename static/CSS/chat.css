@@ -13,9 +13,9 @@
 
 #msgs-container {
     padding: 10px;
-    background-color: white;
+    background-color: rgb(250, 250, 250);
     border-radius: 10px;
-    height: calc(100vh - 280px);
+    height: calc(100vh - 180px);
     overflow-y: auto;
     margin: 0 auto;
     margin-bottom: 20px;
@@ -48,6 +48,15 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 1rem;
+}
+
+.chat-room-list {
+  background: white;
+  border-radius: 3px;
+  /* box-shadow: 0 2px 4px rgba(0,0,0,0.1); */
+  height: calc(100vh - 100px); /* 헤더 높이를 고려한 높이 설정 */
+  overflow-y: auto; /* 내용이 넘칠 경우 스크롤 표시 */
+  border-right: 1px solid #ccc;
 }
 
 .my-message-container {

@@ -11,56 +11,55 @@
         <div class="text-danger text-center">
             {% include 'partial/flash.html' %}
         </div>
-
-        <div class="col-md-4 col-lg-4">
-            <h1 class="my-4 text-center">채팅</h1>
+        <div class="col-md-4 col-lg-4 mt-4 pe-0">
             <div class="chat-room-list">
                 {% for room in chat_room_list: %}
                     {% if room.room_check == True: %}
                         <!-- 채팅방 목록 -->
-                         <ul class="list-unstyled">
-                            <li class="chat-room-item text-decoration-none" 
-                            data-room-id="{{ room.room_id }}" 
-                            data-receive-user-id="{{ room.receive_user_id }}"
-                             data-receive-user-name="{{ room.receiver_name }}" 
-                             style="cursor: pointer;">
-                                <div class="d-flex align-items-center p-3 border-bottom">
-                                    <div class="position-relative">
-                                        {% if room.other_user_profile: %}
-                                            <img src="{{room.other_user_profile}}" class="rounded-circle" width="50" height="50" alt="알 수 없음">
-                                        {% else: %}
-                                            <img src="#" alt="알 수 없음">
-                                        {% endif %}
-                                    </div>
-                                    <div class="ms-3 flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0 text-dark">{{ room.email }}</h6>
-                                            <small class="text-muted">{{ room.message_time }}</small>
-                                        </div>
-                                        <p class="mb-0 text-muted text-truncate">{{ room.latest_message }}</p>
-                                    </div>
+                        <li class="chat-room-item text-decoration-none list-group-item" 
+                        data-room-id="{{ room.room_id }}" 
+                        data-receive-user-id="{{ room.receive_user_id }}"
+                            data-receive-user-name="{{ room.receiver_name }}" 
+                            style="cursor: pointer;">
+                            <div class="d-flex align-items-center border-bottom p-3">
+                                <div class="position-relative">
+                                    {% if room.other_user_profile: %}
+                                        <img src="{{room.other_user_profile}}" class="rounded-circle" width="50" height="50" alt="알 수 없음">
+                                    {% else: %}
+                                        <img src="#" alt="알 수 없음">
+                                    {% endif %}
                                 </div>
-                            </li>
-                         </ul>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 text-dark">{{ room.receiver_name }}</h6>
+                                        <small class="text-muted">{{ room.message_time }}</small>
+                                    </div>
+                                    <p class="mb-0 text-muted text-truncate">{{ room.latest_message }}</p>
+                                </div>
+                            </div>
+                        </li>
                     {% endif %}
                 {% endfor %}
             </div>
         </div>
 
-        <div class="col-md-8 col-lg-8" id="chat-room-widget">
-            <div class="empty-chat-placeholder d-flex justify-content-center align-items-center">
+        <div class="col-md-8 col-lg-8 ps-0" id="chat-room-widget">
+            <!-- <div class="empty-chat-placeholder d-flex justify-content-center align-items-center" style="height: 100%;" id="empty-chat-placeholder">
                 <p class="text-center text-muted">채팅방을 선택해주세요</p>
-            </div>
-            <div class="mt-3" id="chat-room-widget-content" style="display: none; border-left: 1px solid #dee2e6;">
+            </div> -->
+            <div class="mt-3" id="chat-room-widget-content" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center border-bottom border-top">
+                    <h5 id="chat-room-title" class="text-center mt-3 ps-3 mb-3" style="display: none;"></h5>
+                    <div class="text-center mt-3 pe-4">
+                        <a href="/chat/chat_room" class="btn btn-outline-danger btn-sm mb-3" id="leave_chat_btn">채팅방 나가기</a>
+                    </div>
+                </div>
                 <div class="chat-content">
                     <div id="msgs-container" class="">
                         <ul id="messages"></ul>
                     </div>
                     <div>
                         <input class="form-control w-100" type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="/chat/chat_room" class="btn btn-outline-danger btn-sm" id="leave_chat_btn">채팅방 나가기</a>
                     </div>
                 </div>
             </div>
@@ -86,9 +85,13 @@
             // 채팅 UI 요소들의 표시 상태 설정
             document.getElementById('chat-room-widget-content').style.display = 'block';
             // empty-chat-placeholder 숨기기
-            document.querySelector('.empty-chat-placeholder').style.display = 'none';
+            // document.getElementById('empty-chat-placeholder').style.display = 'none';
             // chat-content 표시
             document.querySelector('.chat-content').style.display = 'block';
+
+            document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
+            document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
+            // document.getElementById('leave_chat_btn').style.display = 'block'; // 채팅방 나가기 버튼 표시
 
             // window.location.href = redirectUrl;
 
@@ -174,20 +177,24 @@
     // 모든 채팅방 아이템에 대해 클릭 이벤트 리스너 추가
     document.querySelectorAll('.chat-room-item').forEach(item => {
         item.addEventListener('click', function() {
-            // empty-chat-placeholder 숨기기
-            const emptyChatPlaceholder = document.getElementById('empty-chat-placeholder');
-            if (emptyChatPlaceholder) {
-                emptyChatPlaceholder.style.display = 'none';
-            }
+            // console.log('채팅방 클릭됨');
+            // const placeholder = document.getElementById('empty-chat-placeholder');
+            // console.log('placeholder 요소:', placeholder);
+            // placeholder.style.display = 'none';
+            // console.log('display 스타일 변경됨');
+            
             // 채팅 UI 요소들의 표시 상태 설정
             document.getElementById('chat-room-widget-content').style.display = 'block';
-            // chat-content 표시
             document.querySelector('.chat-content').style.display = 'block';
-
+            
             // 클릭된 채팅방의 데이터 속성 값들을 가져옴
             const roomId = this.getAttribute('data-room-id');
             const receiveUserId = this.getAttribute('data-receive-user-id');
             const receiveUserName = this.getAttribute('data-receive-user-name');
+
+            document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
+            document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
+            // document.getElementById('leave_chat_btn').style.display = 'block'; // 채팅방 나가기 버튼 표시
 
             // 첫 번째 AJAX 요청: 채팅방 입장 처리
             fetch(`/chat/get_messages/${receiveUserId}`, {
@@ -413,12 +420,6 @@
 </script>
 
 <style>
-    .chat-room-list {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
     .chat-room-item:hover {
         background-color: #f8f9fa;
     }
