@@ -31,6 +31,35 @@ def chat_room():
     # # Expires: 0 캐시 만료 시간을 0으로 설정하여 캐시된 데이터가 만료되도록 함
     # response.headers['Expires'] = '0'
     # return response
+    if request.method == 'POST':
+        receive_user_id = request.form.get('receive_user_id')
+        receive_user_name = request.form.get('receive_user_name')
+
+        # 기존 채팅방 확인
+        room = Room.query.filter(
+            or_(
+                and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
+                and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
+            )
+        ).first()
+
+        if not room:
+            # 새 채팅방 생성
+            room = Room(
+                sender_id=current_user.id,
+                receiver_id=receive_user_id,
+                sender_join=True,
+                receiver_join=True
+            )
+            db.session.add(room)
+            db.session.commit()
+
+    #     return redirect(url_for('chatting.chat', receive_user_id=receive_user_id, new_chat_room_id=room.id))
+        return render_template('chat/new_chat_room.html', 
+                               chat_room_list=get_chat_rooms(),
+                               logged_in=current_user.is_authenticated,
+                               redirect_url=url_for('chatting.chat', receive_user_id=receive_user_id, new_chat_room_id=room.id))
+
     return render_template('chat/new_chat_room.html', 
                           chat_room_list=get_chat_rooms(),
                           logged_in=current_user.is_authenticated)
@@ -91,6 +120,9 @@ def get_chat_rooms():
 @chatting.route('/get_messages/<string:receive_user_id>', methods=['GET', 'POST'])
 @admin_only
 def chat(receive_user_id):
+    # new_chat_room_id = request.args.get('new_chat_room_id')
+    # print(new_chat_room_id)
+
     # receive_user_id: 메시지를 받게 되는 사람
 
     # receive_user의 이름을 데이터베이스에서 조회
@@ -100,13 +132,25 @@ def chat(receive_user_id):
     if request.method == 'GET':
         room_id = request.args.get('room_id')
 
-    elif request.method == 'POST':
+    room_id = None
+    if request.method == 'POST':
         data = request.get_json()
         # 데이터 추출
         room_id = data.get('room_id')
         print(room_id)
 
     # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
+
+    # if new_chat_room_id:
+    #     new_chat_room = Room.query.get(new_chat_room_id)
+    #     room_id = new_chat_room.id
+    # else:
+    #     room = Room.query.filter(
+    #         or_(
+    #             and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
+    #             and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
+    #         )
+    #     ).first()
     room = Room.query.filter(
         or_(
             and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
@@ -128,6 +172,7 @@ def chat(receive_user_id):
 
     # room_id가 존재하면 해당 room_id로, 그렇지 않으면 room.id로 chat_room을 가져옴
     chat_room = db.get_or_404(Room, room_id if room_id else room.id)
+    # chat_room = db.get_or_404(Room, room_id)
     # print(chat_room)
 
     if current_user.id != chat_room.sender_id and current_user.id != chat_room.receiver_id:
