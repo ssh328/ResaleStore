@@ -6,19 +6,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
+<div class="container h-100">
+    <div class="row justify-content-center h-100">
         <div class="text-danger text-center">
             {% include 'partial/flash.html' %}
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4 col-lg-4">
             <h1 class="my-4 text-center">채팅</h1>
             <div class="chat-room-list">
                 {% for room in chat_room_list: %}
                     {% if room.room_check == True: %}
                         <!-- 채팅방 목록 -->
-                         <ul>
+                         <ul class="list-unstyled">
                             <li class="chat-room-item text-decoration-none" 
                             data-room-id="{{ room.room_id }}" 
                             data-receive-user-id="{{ room.receive_user_id }}"
@@ -47,20 +47,20 @@
             </div>
         </div>
 
-        <div class="col-md-6" id="chat-room-widget">
-            <div id="chat-room-widget-content" style="display: none;">
-                <div class="empty-chat-placeholder">
-                    <p class="text-center text-muted">채팅방을 선택해주세요</p>
-                </div>
+        <div class="col-md-8 col-lg-8" id="chat-room-widget">
+            <div class="empty-chat-placeholder d-flex justify-content-center align-items-center">
+                <p class="text-center text-muted">채팅방을 선택해주세요</p>
+            </div>
+            <div class="mt-3" id="chat-room-widget-content" style="display: none; border-left: 1px solid #dee2e6;">
                 <div class="chat-content">
-                    <div id="msgs-container">
+                    <div id="msgs-container" class="">
                         <ul id="messages"></ul>
                     </div>
-                    <div id="message-box">
-                        <input type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
+                    <div>
+                        <input class="form-control w-100" type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
                     </div>
                     <div class="text-center mt-3">
-                        <a href="/chat_room" class="btn btn-outline-danger btn-sm" id="leave_chat_btn">채팅방 나가기</a>
+                        <a href="/chat/chat_room" class="btn btn-outline-danger btn-sm" id="leave_chat_btn">채팅방 나가기</a>
                     </div>
                 </div>
             </div>
@@ -174,10 +174,13 @@
     // 모든 채팅방 아이템에 대해 클릭 이벤트 리스너 추가
     document.querySelectorAll('.chat-room-item').forEach(item => {
         item.addEventListener('click', function() {
+            // empty-chat-placeholder 숨기기
+            const emptyChatPlaceholder = document.getElementById('empty-chat-placeholder');
+            if (emptyChatPlaceholder) {
+                emptyChatPlaceholder.style.display = 'none';
+            }
             // 채팅 UI 요소들의 표시 상태 설정
             document.getElementById('chat-room-widget-content').style.display = 'block';
-            // empty-chat-placeholder 숨기기
-            document.querySelector('.empty-chat-placeholder').style.display = 'none';
             // chat-content 표시
             document.querySelector('.chat-content').style.display = 'block';
 
@@ -400,9 +403,9 @@
     const leave_btn = document.getElementById('leave_chat_btn');
     leave_btn.addEventListener('click', () => {
         socket.emit('leave', {
-        'current_user': current_user,
-        'room_id': room_id,
-        'receive_user_id': receive_user_id
+        'current_user': CURRENT_USER,
+        'room_id': ROOM_ID,
+        'receive_user_id': RECEIVE_USER_ID
         })
     });
 

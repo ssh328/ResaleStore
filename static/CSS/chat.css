@@ -1,21 +1,25 @@
 #chat-room-widget {
-    max-width: 720px;
-    margin: 0 auto;
+    /* max-width: 720px; */
+    /* margin: 0 auto; */
     background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* border-radius: 10px; */
+    /* padding: 20px; */
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+
+    max-width: 100%;  
+    margin: 0;        
+    padding: 10px; 
 }
 
 #msgs-container {
     padding: 10px;
-    background-color: rgb(191, 237, 255);
+    background-color: white;
     border-radius: 10px;
     height: calc(100vh - 280px);
     overflow-y: auto;
     margin: 0 auto;
     margin-bottom: 20px;
-    width: 75%;
+    width: 95%;
 }
 
 #messages {
@@ -81,8 +85,8 @@
 }
 
 .other-message-container .message-text {
-  background-color: white;
-  color: black;
+  background-color: rgb(167, 167, 167);
+  color: white;
 }
 
 .message-time {
