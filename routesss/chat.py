@@ -58,7 +58,7 @@ def chat_room():
         return render_template('chat/new_chat_room.html', 
                                chat_room_list=get_chat_rooms(),
                                logged_in=current_user.is_authenticated,
-                               redirect_url=url_for('chatting.chat', receive_user_id=receive_user_id, new_chat_room_id=room.id))
+                               redirect_url=url_for('chatting.chat', receive_user_id=receive_user_id, new_chat_room_id=room.id, receive_user_name=receive_user_name))
 
     return render_template('chat/new_chat_room.html', 
                           chat_room_list=get_chat_rooms(),

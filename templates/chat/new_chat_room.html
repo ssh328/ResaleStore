@@ -70,87 +70,97 @@
 
 <script type="text/javascript">
 
-    // // redirect_url이 존재할 경우 해당 URL로 리디렉션
-    // const redirectUrl = "{{ redirect_url }}";
-    //     if (redirectUrl) {
+    // redirect_url이 존재할 경우 해당 URL로 리디렉션
+    const redirectUrl = "{{ redirect_url }}";
+        if (redirectUrl) {
+            // redirectUrl에서 roomid, receive_user_id, receive_user_name 추출
+            const url = redirectUrl;
+            console.log(url);
+            const roomId = url.match(/new_chat_room_id=([^&]*)/)[1];
+            console.log(roomId);
+            const receiveUserId = url.match(/\/chat\/get_messages\/([^?]*)/)[1];
+            console.log(receiveUserId);
+            const receiveUserName = url.match(/receive_user_name=([^&]*)/)[1];
+            console.log(receiveUserName);
 
-    //         // 채팅 UI 요소들의 표시 상태 설정
-    //         document.getElementById('chat-room-widget-content').style.display = 'block';
-    //         // empty-chat-placeholder 숨기기
-    //         document.querySelector('.empty-chat-placeholder').style.display = 'none';
-    //         // chat-content 표시
-    //         document.querySelector('.chat-content').style.display = 'block';
+            // 채팅 UI 요소들의 표시 상태 설정
+            document.getElementById('chat-room-widget-content').style.display = 'block';
+            // empty-chat-placeholder 숨기기
+            document.querySelector('.empty-chat-placeholder').style.display = 'none';
+            // chat-content 표시
+            document.querySelector('.chat-content').style.display = 'block';
 
-    //         // window.location.href = redirectUrl;
+            // window.location.href = redirectUrl;
 
-    //         // 클릭된 채팅방의 데이터 속성 값들을 가져옴
-    //         const roomId = this.getAttribute('data-room-id');
-    //         const receiveUserId = this.getAttribute('data-receive-user-id');
-    //         const receiveUserName = this.getAttribute('data-receive-user-name');
+            // 클릭된 채팅방의 데이터 속성 값들을 가져옴
+            
+            // const roomId = document.getAttribute('data-room-id'); // 선택된 채팅방의 ID 가져오기
+            // const receiveUserId = document.getAttribute('data-receive-user-id'); // 선택된 채팅방의 수신자 ID 가져오기
+            // const receiveUserName = document.getAttribute('data-receive-user-name'); // 선택된 채팅방의 수신자 이름 가져오기
 
-    //         // 첫 번째 AJAX 요청: 채팅방 입장 처리
-    //         fetch(redirectUrl, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({
-    //                 room_id: roomId,
-    //                 receive_user_name: receiveUserName
-    //             })
-    //         })
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             if (data) {
-    //                 // 성공 시 채팅방으로 이동
-    //                 console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
-    //             } else {
-    //                 // 실패 시 에러 메시지 표시
-    //                 alert('채팅방 입장에 실패했습니다.');
-    //             }
-    //         })
-    //         .catch(error => {
-    //             console.error('Error:', error);
-    //             alert('오류가 발생했습니다.');
-    //         });
+            // 첫 번째 AJAX 요청: 채팅방 입장 처리
+            fetch(redirectUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    room_id: roomId,
+                    receive_user_name: receiveUserName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    // 성공 시 채팅방으로 이동
+                    console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
+                } else {
+                    // 실패 시 에러 메시지 표시
+                    alert('채팅방 입장에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('오류가 발생했습니다.');
+            });
 
-    //         // 두 번째 AJAX 요청: 채팅 메시지 데이터 가져오기
-    //         fetch(redirectUrl)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             console.log(`데이터 가져옴 ${data.room_id}, ${data.receive_user_name}`);
+            // 두 번째 AJAX 요청: 채팅 메시지 데이터 가져오기
+            fetch(redirectUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log(`데이터 가져옴 ${data.room_id}, ${data.receive_user_name}`);
                 
-    //             // 전역 변수에 값 할당
-    //             CURRENT_USER = data.current_user.name;
-    //             ROOM_ID = data.room_id;
-    //             RECEIVE_USER_NAME = data.receive_user_name;
+                // 전역 변수에 값 할당
+                CURRENT_USER = data.current_user.name;
+                ROOM_ID = data.room_id;
+                RECEIVE_USER_NAME = data.receive_user_name;
 
-    //             // 기존 메시지 목록 초기화
-    //             document.getElementById('messages').innerHTML = '';
+                // 기존 메시지 목록 초기화
+                document.getElementById('messages').innerHTML = '';
 
-    //             // 소켓 연결 및 채팅방 입장
-    //             socket.emit("join", {
-    //                 "current_user": CURRENT_USER,
-    //                 "room_id": ROOM_ID
-    //             });
+                // 소켓 연결 및 채팅방 입장
+                socket.emit("join", {
+                    "current_user": CURRENT_USER,
+                    "room_id": ROOM_ID
+                });
 
-    //             // 이전 메시지 표시
-    //             if (data.messages && data.messages.length > 0) {
-    //                 data.messages.forEach(message => {
-    //                     createChatItem(
-    //                         message.sender_name,
-    //                         message.text,
-    //                         message.receive_user_name,
-    //                         message.time
-    //                     );
-    //                 });
-    //             }
+                // 이전 메시지 표시
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(message => {
+                        createChatItem(
+                            message.sender_name,
+                            message.text,
+                            message.receive_user_name,
+                            message.time
+                        );
+                    });
+                }
 
-    //         })
-    //         .catch(error => {
-    //             console.error('Error:', error);
-    //         });
-    //     }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
 
 
     let socket = io();
