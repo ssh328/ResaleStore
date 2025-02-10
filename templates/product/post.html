@@ -55,7 +55,7 @@
                 <button type="submit" name="delete_btn" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제하기</button>
 
                 <!-- Modal -->
-                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" inert>
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -64,11 +64,12 @@
                             </div>
                             <div class="modal-body">
                                 정말 삭제하시겠습니까?
+                                <input type="text" id="deleteInput" style="display:none;" />
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                                <form action="{{ url_for('posts.delete', post_id=requested_post.id) }}" method="POST">
-                                    <button type="submit" name="delete_btn" class="btn btn-outline-danger">삭제하기</button>
+                                <form id="deleteForm" action="{{ url_for('posts.delete', post_id=requested_post.id) }}" method="POST">
+                                    <button type="submit" id="deleteButton" name="delete_btn" class="btn btn-outline-danger">삭제하기</button>
                                 </form>
                             </div>
                         </div>
@@ -106,5 +107,27 @@
 </div>
 
 <script src="{{ url_for('static', filename='javascripts/modal.js') }}"></script>
+
+<script>
+    // 유효성 검사 후 로딩 중 표시
+    document.getElementById('deleteForm').addEventListener('submit', function(event) {
+        const deleteButton = document.getElementById('deleteButton');
+        const originalWidth = deleteButton.offsetWidth; // 원래 너비 저장
+
+        // 폼의 유효성을 검사
+        if (!this.checkValidity()) {
+            event.preventDefault(); // 유효성 검사 실패 시 제출 방지
+            this.classList.add('was-validated'); // 유효성 검사 스타일 추가
+            return;
+        }
+
+        deleteButton.innerHTML = `
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="visually-hidden" role="status">Loading...</span>
+        `;
+        deleteButton.style.width = originalWidth + 'px'; // 원래 너비로 설정
+        deleteButton.disabled = true; // 버튼 비활성화
+    });
+</script>
 
 {% endblock %}

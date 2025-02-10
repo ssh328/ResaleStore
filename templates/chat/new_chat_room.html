@@ -138,6 +138,9 @@
                 // 기존 메시지 목록 초기화
                 document.getElementById('messages').innerHTML = '';
 
+                // 날짜 구분선을 위한 변수 초기화
+                lastDate = null;
+
                 // 소켓 연결 및 채팅방 입장
                 socket.emit("join", {
                     "current_user": CURRENT_USER,
@@ -222,6 +225,9 @@
 
                 // 기존 메시지 목록 초기화
                 document.getElementById('messages').innerHTML = '';
+
+                // 날짜 구분선을 위한 변수 초기화
+                lastDate = null;
 
                 // 소켓 연결 및 채팅방 입장
                 socket.emit("join", {
