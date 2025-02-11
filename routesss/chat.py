@@ -34,6 +34,7 @@ def chat_room():
     if request.method == 'POST':
         receive_user_id = request.form.get('receive_user_id')
         receive_user_name = request.form.get('receive_user_name')
+        current_time = datetime.now()
 
         # 기존 채팅방 확인
         room = Room.query.filter(
@@ -49,20 +50,29 @@ def chat_room():
                 sender_id=current_user.id,
                 receiver_id=receive_user_id,
                 sender_join=True,
-                receiver_join=True
+                receiver_join=True,
+                date=current_time
             )
             db.session.add(room)
             db.session.commit()
 
-    #     return redirect(url_for('chatting.chat', receive_user_id=receive_user_id, new_chat_room_id=room.id))
-        return render_template('chat/new_chat_room.html', 
-                               chat_room_list=get_chat_rooms(),
-                               logged_in=current_user.is_authenticated,
-                               redirect_url=url_for('chatting.chat', receive_user_id=receive_user_id, new_chat_room_id=room.id, receive_user_name=receive_user_name))
-
-    return render_template('chat/new_chat_room.html', 
-                          chat_room_list=get_chat_rooms(),
-                          logged_in=current_user.is_authenticated)
+        response = make_response(render_template('chat/new_chat_room.html', 
+                            chat_room_list=get_chat_rooms(),
+                            logged_in=current_user.is_authenticated,
+                            redirect_url=url_for('chatting.chat', 
+                                               receive_user_id=receive_user_id, 
+                                               new_chat_room_id=room.id, 
+                                               receive_user_name=receive_user_name)))
+    else:
+        response = make_response(render_template('chat/new_chat_room.html', 
+                            chat_room_list=get_chat_rooms(),
+                            logged_in=current_user.is_authenticated))
+    
+    # 캐시 제어 헤더 추가
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 
@@ -77,26 +87,55 @@ def get_chat_rooms():
         other_user_id = room.receiver_id if room.sender_id == user_id else room.sender_id
         other_user = User.query.get(other_user_id)
 
-        # 상대방 정보가 없을 경우 처리
-        if other_user is None:
-            room_check = Room.query.get(room.id)
-            # print(room_check)
-        else:
-            # 다른 사용자 정보가 있을 경우 room_check를 가져오는 로직 추가
-            room_check = Room.query.filter(
-                or_(
-                    and_(Room.sender_id == current_user.id, Room.receiver_id == other_user.id),
-                    and_(Room.sender_id == other_user.id, Room.receiver_id == current_user.id)
-                )
-            ).first()
+        # 상대방 정보가 없을 경우 아니면 다른 사용자 정보가 있을 경우 room_check를 가져오는 로직 추가
+        room_check = Room.query.get(room.id) if other_user is None else Room.query.filter(
+            or_(
+                and_(Room.sender_id == current_user.id, Room.receiver_id == other_user.id),
+                and_(Room.sender_id == other_user.id, Room.receiver_id == current_user.id)
+            )
+        ).first()
 
+
+        # # 최신 메시지 가져오기 (마지막 접속 시간 이후의 메시지만)
+        # is_sender = user_id == room_check.sender_id
+        # last_join_time = room_check.sender_last_join if is_sender else room_check.receiver_last_join
+        
+        # latest_message = Message.query.filter_by(room_id=room_check.id).filter(
+        #     Message.time >= last_join_time
+        # ).order_by(Message.time.desc()).first() if last_join_time else None
+
+        # message_time = latest_message.time.strftime('%Y-%m-%d') if latest_message != None else room_check.date.strftime('%Y-%m-%d')
+        
+        # # 채팅방 상태 확인
+        # room_status = room_check.sender_join if is_sender else room_check.receiver_join
+        # ------------------------------------------------------------
         # 최신 메시지 가져오기
         latest_message = Message.query.filter_by(room_id=room_check.id).order_by(Message.time.desc()).first()
 
-        message_time = latest_message.time.strftime('%Y-%m-%d') if latest_message else None
+        message_time = latest_message.time.strftime('%Y-%m-%d') if latest_message else room_check.date.strftime('%Y-%m-%d')
         
         # 채팅방 상태 확인
         is_sender = user_id == room_check.sender_id
+        if is_sender:
+            last_join_time = room_check.sender_last_join
+            if last_join_time is not None:
+                latest_message = Message.query.filter_by(room_id=room_check.id).filter(
+                    Message.time >= last_join_time
+                ).order_by(Message.time.desc()).first()
+            else:
+                latest_message = Message.query.filter_by(room_id=room_check.id).order_by(Message.time.desc()).first()
+        else:
+            last_join_time = room_check.receiver_last_join
+            if last_join_time is not None:
+                latest_message = Message.query.filter_by(room_id=room_check.id).filter(
+                    Message.time >= last_join_time
+                ).order_by(Message.time.desc()).first()
+            else:
+                latest_message = Message.query.filter_by(room_id=room_check.id).order_by(Message.time.desc()).first()
+
+        message_time = latest_message.time.strftime('%Y-%m-%d') if latest_message else room_check.date.strftime('%Y-%m-%d')
+        
+        # 채팅방 상태 확인
         room_status = room_check.sender_join if is_sender else room_check.receiver_join
 
         return {
@@ -105,7 +144,7 @@ def get_chat_rooms():
             'room_id': room_check.id,
             'room_check': room_status,
             'receiver_name': other_user.name if other_user else 'Unknown',
-            'latest_message': latest_message.text if latest_message else None,
+            'latest_message': latest_message.text if latest_message else '대화가 없습니다.',
             'message_time': message_time,
             'other_user_profile': other_user.profile_image_name if other_user else None,
         }
@@ -120,37 +159,25 @@ def get_chat_rooms():
 @chatting.route('/get_messages/<string:receive_user_id>', methods=['GET', 'POST'])
 @admin_only
 def chat(receive_user_id):
-    # new_chat_room_id = request.args.get('new_chat_room_id')
-    # print(new_chat_room_id)
-
     # receive_user_id: 메시지를 받게 되는 사람
-
     # receive_user의 이름을 데이터베이스에서 조회
+    # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
+
     receive_user = User.query.get(receive_user_id)
     receive_user_name = receive_user.name if receive_user else None
+    current_time = datetime.now()
     
-    if request.method == 'GET':
-        room_id = request.args.get('room_id')
+    # if request.method == 'GET':
+    #     room_id = request.args.get('room_id')
 
     room_id = None
+
     if request.method == 'POST':
         data = request.get_json()
         # 데이터 추출
         room_id = data.get('room_id')
         print(room_id)
 
-    # current_user: 채팅하기 눌렀을 때 메시지를 처음 보내는 사람
-
-    # if new_chat_room_id:
-    #     new_chat_room = Room.query.get(new_chat_room_id)
-    #     room_id = new_chat_room.id
-    # else:
-    #     room = Room.query.filter(
-    #         or_(
-    #             and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
-    #             and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
-    #         )
-    #     ).first()
     room = Room.query.filter(
         or_(
             and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
@@ -163,7 +190,8 @@ def chat(receive_user_id):
             sender_id=current_user.id,
             receiver_id=receive_user_id,
             sender_join=True,
-            receiver_join=True
+            receiver_join=True,
+            date=current_time
         )
         db.session.add(new_chat_room)
         db.session.commit()
@@ -172,8 +200,6 @@ def chat(receive_user_id):
 
     # room_id가 존재하면 해당 room_id로, 그렇지 않으면 room.id로 chat_room을 가져옴
     chat_room = db.get_or_404(Room, room_id if room_id else room.id)
-    # chat_room = db.get_or_404(Room, room_id)
-    # print(chat_room)
 
     if current_user.id != chat_room.sender_id and current_user.id != chat_room.receiver_id:
         return redirect(url_for('index'))
@@ -301,7 +327,9 @@ def handle_message(data):
 def on_leave(data):
     room = data['room_id']
     name = data['current_user']
-    receive_user_id = data['receive_user_id']
+    receive_user_name = data['receive_user_name']
+    receive_user_id = User.query.filter_by(name=receive_user_name).first().id
+    # receive_user_id = data['receive_user_id']
     
     chat_room = Room.query.filter(
         or_(

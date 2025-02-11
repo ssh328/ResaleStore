@@ -76,6 +76,7 @@ class Room(db.Model):
     # sender, receiver 이렇게 안해도 될듯... 어차피 방 안에 같이 있고 receiver가 sender 에게 대화를 걸 수 있어서...차라리 user1, user2 가 나을듯
     sender_join = db.Column(db.Boolean, nullable=False, default=False)
     receiver_join = db.Column(db.Boolean, nullable=False, default=False)
+    date = db.Column(db.DateTime, nullable=False)
 
 
     # **
