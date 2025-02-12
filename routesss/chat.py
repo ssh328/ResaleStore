@@ -34,6 +34,7 @@ def chat_room():
     if request.method == 'POST':
         receive_user_id = request.form.get('receive_user_id')
         receive_user_name = request.form.get('receive_user_name')
+
         current_time = datetime.now()
 
         # 기존 채팅방 확인
@@ -44,7 +45,19 @@ def chat_room():
             )
         ).first()
 
-        if not room:
+
+        if room:
+            # 기존 방이 있고 현재 사용자가 sender인 경우
+            if current_user.id == room.sender_id and not room.sender_join:
+                room.sender_join = True
+                room.sender_last_join = current_time
+                db.session.commit()
+            # 기존 방이 있고 현재 사용자가 receiver인 경우
+            elif current_user.id == room.receiver_id and not room.receiver_join:
+                room.receiver_join = True
+                room.receiver_last_join = current_time
+                db.session.commit()
+        else:
             # 새 채팅방 생성
             room = Room(
                 sender_id=current_user.id,
@@ -55,6 +68,19 @@ def chat_room():
             )
             db.session.add(room)
             db.session.commit()
+
+            
+        # if not room:
+        #     # 새 채팅방 생성
+        #     room = Room(
+        #         sender_id=current_user.id,
+        #         receiver_id=receive_user_id,
+        #         sender_join=True,
+        #         receiver_join=True,
+        #         date=current_time
+        #     )
+        #     db.session.add(room)
+        #     db.session.commit()
 
         response = make_response(render_template('chat/new_chat_room.html', 
                             chat_room_list=get_chat_rooms(),

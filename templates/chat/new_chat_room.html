@@ -353,9 +353,29 @@
         const formattedHours = hours % 12 || 12;
         const formattedTime = `${ampm} ${formattedHours}:${minutes.toString().padStart(2, '0')}`;
 
+        // 이전 메시지의 시간과 발신자를 확인하기 위해 마지막 메시지 요소 가져오기
+        const lastMessage = messages.lastElementChild;
+        let showTime = true;
+
+        if (lastMessage) {
+            const lastMessageContainer = lastMessage.querySelector('div');
+            const lastMessageTime = lastMessage.querySelector('.message-time');
+            const isSameSender = (sender_name === CURRENT_USER && lastMessageContainer.classList.contains('my-message-container')) ||
+                                (sender_name !== CURRENT_USER && lastMessageContainer.classList.contains('other-message-container'));
+            
+            // 이전 메시지의 시간과 현재 메시지의 시간이 같고 같은 발신자인 경우
+            if (isSameSender && lastMessageTime && lastMessageTime.textContent === formattedTime) {
+                // 이전 메시지의 시간을 숨김
+                lastMessageTime.style.display = 'none';
+                showTime = true; // 현재 메시지(마지막 메시지)에만 시간 표시
+            }
+        }
+
         // 시간 스타일 클래스 추가
         timeSpan.classList.add('message-time');
-        timeSpan.textContent = formattedTime;
+        if (showTime) {
+            timeSpan.textContent = formattedTime;
+        }
         
         // 현재 스크롤이 거의 맨 아래인지 확인 (여유값 10px)
         const isScrolledToBottom = msgsContainer.scrollHeight - msgsContainer.clientHeight - msgsContainer.scrollTop <= 10;
@@ -401,7 +421,31 @@
 
     // 서버에서 받은 메시지 처리
     socket.on('message', function (dt) {
-        createChatItem(dt.sender_name, dt.text, dt.receive_user_name, dt.timestamp, dt.room_id)
+        createChatItem(dt.sender_name, dt.text, dt.receive_user_name, dt.timestamp, dt.room_id);
+        
+        // 채팅 목록 업데이트
+        const chatRoomItem = document.querySelector(`.chat-room-item[data-room-id="${dt.room_id}"]`);
+        if (chatRoomItem) {
+            // 최신 메시지 텍스트 업데이트
+            const latestMessageElement = chatRoomItem.querySelector('.text-muted.text-truncate');
+            if (latestMessageElement) {
+                latestMessageElement.textContent = dt.text;
+            }
+            
+            // 시간 업데이트
+            const timeElement = chatRoomItem.querySelector('.text-muted');
+            if (timeElement) {
+                const messageDate = new Date(dt.timestamp);
+                // UTC를 한국 시간(KST)으로 변환
+                const kstDate = new Date(messageDate.getTime() + (9 * 60 * 60 * 1000));
+                const formattedDate = kstDate.toISOString().split('T')[0];  // YYYY-MM-DD 형식
+                timeElement.textContent = formattedDate;
+            }
+
+            // 채팅방 목록의 맨 위로 이동
+            const chatRoomList = document.querySelector('.chat-room-list');
+            chatRoomList.insertBefore(chatRoomItem, chatRoomList.firstChild);
+        }
     });
 
     const leave_btn = document.getElementById('leave_chat_btn');

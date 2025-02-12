@@ -43,6 +43,9 @@
                 <input type="hidden" name="receive_user_name" value="{{ requested_post.author.name }}">
                 <button type="submit" class="btn btn-outline-primary w-100">채팅하기</button>
             </form>
+            <!-- <button type="button" class="btn btn-outline-primary w-100" id="chat_btn" 
+                data-receive-user-id="{{ requested_post.author.id }}" 
+                data-receive-user-name="{{ requested_post.author.name }}">채팅하기</button> -->
             {% endif %}
 
             {% if current_user.id == ADMIN_USER_ID or current_user.id == requested_post.author.id : %}
@@ -128,6 +131,39 @@
         deleteButton.style.width = originalWidth + 'px'; // 원래 너비로 설정
         deleteButton.disabled = true; // 버튼 비활성화
     });
+
+
+    // // 채팅 버튼 클릭 시 채팅 페이지로 이동
+    // document.getElementById('chat_btn').addEventListener('click', function() {
+    //     const receiveUserId = this.getAttribute('data-receive-user-id');
+    //     const reveiverUserName = this.getAttribute('data-receive-user-name');
+
+    //     fetch('/chat/chat_room', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({
+    //             receive_user_id: receiveUserId,
+    //             receive_user_name: reveiverUserName
+    //         })
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.success) {
+    //             window.location.href = data.redirect_url;
+    //         } else {
+    //             alert('채팅 방 생성에 실패했습니다.');
+    //         }
+    //     })
+    //     .catch(error => {
+    //         console.error('채팅 방 생성 오류:', error);
+    //         alert('채팅 방 생성에 실패했습니다.');
+    //     })
+    // })
+
+
+
 </script>
 
 {% endblock %}
