@@ -32,7 +32,13 @@
                                 <div class="ms-3 flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0 text-dark">{{ room.receiver_name }}</h6>
-                                        <small class="text-muted">{{ room.message_time }}</small>
+                                        <div class="d-flex align-items-center">
+                                            {% if room.unread_count > 0 %}
+                                            <span class="badge bg-danger rounded-pill me-2">{{ room.unread_count }}</span>
+                                            {% endif %}
+                                            <small class="text-muted">{{ room.message_time }}</small>
+                                        </div>
+                                        <!-- <small class="text-muted">{{ room.message_time }}</small> -->
                                     </div>
                                     <p class="mb-0 text-muted text-truncate">{{ room.latest_message }}</p>
                                 </div>
@@ -179,6 +185,25 @@
             // console.log('placeholder 요소:', placeholder);
             // placeholder.style.display = 'none';
             // console.log('display 스타일 변경됨');
+            const newRoomId = this.getAttribute('data-room-id');
+            
+            // 이전 채팅방이 있고, 새로운 방이 다른 경우에만 stay_join 실행
+            if (ROOM_ID && ROOM_ID !== newRoomId) {
+                fetch('/chat/stay_join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        current_user: CURRENT_USER,
+                        room_id: ROOM_ID
+                    })
+                })
+                .then(response => response.json())  // 응답을 JSON으로 파싱
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
             
             // 채팅 UI 요소들의 표시 상태 설정
             document.getElementById('chat-room-widget-content').style.display = 'block';
@@ -460,7 +485,35 @@
         window.location.reload(true);
     });
 
-   
+    // 페이지 이동 시 stay_join False로 변경
+    window.addEventListener('beforeunload', function(e) {
+        if (CURRENT_USER && ROOM_ID) {
+            fetch('/chat/stay_join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    current_user: CURRENT_USER,
+                    room_id: ROOM_ID
+                })
+            })
+            .then(response => response.json())  // 응답을 JSON으로 파싱
+            .then(data => {
+                if (data.success) {
+                    console.log('stay_join 실행');
+                } else {
+                    console.error('stay_join 실행 실패');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+
+
+
 </script>
 
 <style>

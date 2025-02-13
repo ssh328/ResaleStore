@@ -69,7 +69,7 @@ def chat_room():
             db.session.add(room)
             db.session.commit()
 
-            
+
         # if not room:
         #     # 새 채팅방 생성
         #     room = Room(
@@ -120,6 +120,13 @@ def get_chat_rooms():
                 and_(Room.sender_id == other_user.id, Room.receiver_id == current_user.id)
             )
         ).first()
+
+        is_sender = user_id == room_check.sender_id
+        is_receiver = user_id == room_check.receiver_id
+        if is_sender:
+            unread_count = room_check.sender_unread_count
+        elif is_receiver:
+            unread_count = room_check.receiver_unread_count
 
 
         # # 최신 메시지 가져오기 (마지막 접속 시간 이후의 메시지만)
@@ -173,6 +180,7 @@ def get_chat_rooms():
             'latest_message': latest_message.text if latest_message else '대화가 없습니다.',
             'message_time': message_time,
             'other_user_profile': other_user.profile_image_name if other_user else None,
+            'unread_count': unread_count
         }
 
     for room in rooms:
@@ -229,6 +237,16 @@ def chat(receive_user_id):
 
     if current_user.id != chat_room.sender_id and current_user.id != chat_room.receiver_id:
         return redirect(url_for('index'))
+    
+    # if current_user.id == chat_room.sender_id:
+    #     if chat_room.sender_stay_join == True:
+    #         chat_room.sender_unread_count = 0
+    #         db.session.commit()
+
+    # if current_user.id == chat_room.receiver_id:
+    #     if chat_room.receiver_stay_join == True:
+    #         chat_room.receiver_unread_count = 0
+    #         db.session.commit()
 
     if current_user.id == chat_room.sender_id:
         if chat_room.sender_join == False:
@@ -298,6 +316,27 @@ def chat(receive_user_id):
             }  # current_user 객체를 직접 전달하지 않고 필요한 속성만 딕셔너리로 전달
         })
 
+# stay_join False로 변경
+@chatting.route('/stay_join', methods=['POST'])
+@admin_only
+def update_stay_join():
+    data = request.get_json()
+    room = data.get('room_id')
+    current_user = data.get('current_user')
+    chat_room = Room.query.get(room)
+
+    current_user_id = User.query.filter_by(name=current_user).first().id
+    
+    if current_user_id == chat_room.sender_id:
+        chat_room.sender_stay_join = False
+    else:
+        chat_room.receiver_stay_join = False
+    db.session.commit()
+
+    print("False로 변경")
+    return jsonify({"success": True})
+
+
 @socketio.on("connect")
 def test_connect():
     print('connect!')
@@ -310,7 +349,20 @@ def join(data):
     current_user = data['current_user']
     print(f"조인함: {room}")
     print(f"조인함: {current_user}")
+    # 채팅방 접속 시간 업데이트
+    chat_room = Room.query.get(room)
+
+    current_user_id = User.query.filter_by(name=current_user).first().id
+    
+    if current_user_id == chat_room.sender_id:
+        chat_room.sender_stay_join = True
+    else:
+        chat_room.receiver_stay_join = True
+        
+    db.session.commit()
+    
     join_room(room)
+    print("stay_join 실행")
 
 
 @socketio.on('message')
@@ -323,6 +375,19 @@ def handle_message(data):
     # print(receive_user_name)
     current_time = datetime.now()
 
+    chat_room = Room.query.get(room)
+
+    is_sender = name == chat_room.sender.name
+
+    if is_sender:
+        if chat_room.receiver_last_join is None:
+            chat_room.receiver_unread_count += 1
+    else:
+        if chat_room.sender_last_join is None:
+            chat_room.sender_unread_count += 1
+    
+    db.session.commit()
+            
     # 메시지를 데이터베이스에 저장
     new_message = Message(
         room_id=room,
@@ -383,6 +448,24 @@ def on_leave(data):
     emit('status', {'data': f"{name}님이 나갔습니다."}, to=room)
 
 
+# @socketio.on('stay_join')
+# def stay_join(data):
+#     room = data['room_id']
+#     current_user = data['current_user']
+#     chat_room = Room.query.get(room)
+
+#     current_user_id = User.query.filter_by(name=current_user).first().id
+    
+#     if current_user_id == chat_room.sender_id:
+#         chat_room.sender_stay_join = False
+#     else:
+#         chat_room.receiver_stay_join = False
+#     db.session.commit()
+
+#     print("False로 변경")
+#     return jsonify({"success": True})
+
+
 @socketio.on('disconnect')
-def test_disconnect(reason):
+def disconnect(reason):
     print('Client disconnected, reason:', reason)
