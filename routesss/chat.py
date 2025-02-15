@@ -121,12 +121,31 @@ def get_chat_rooms():
             )
         ).first()
 
+        # 현재 사용자가 채팅방의 송신자인지 수신자인지 확인
         is_sender = user_id == room_check.sender_id
         is_receiver = user_id == room_check.receiver_id
+        # 송신자인 경우 읽지 않은 메시지 수 가져오기
         if is_sender:
             unread_count = room_check.sender_unread_count
-        elif is_receiver:
+        else:
+            unread_count = 0
+        # 수신자인 경우 읽지 않은 메시지 수 가져오기
+        if is_receiver:
             unread_count = room_check.receiver_unread_count
+        else:
+            unread_count = 0
+        
+
+        # if is_sender:
+        #     if room_check.sender_stay_join == True:
+        #         room_check.sender_unread_count = 0
+        #         db.session.commit()
+        #         unread_count = 0
+        # elif is_receiver:
+        #     if room_check.receiver_stay_join == True:
+        #         room_check.receiver_unread_count = 0
+        #         db.session.commit()
+        #         unread_count = 0
 
 
         # # 최신 메시지 가져오기 (마지막 접속 시간 이후의 메시지만)
@@ -316,6 +335,7 @@ def chat(receive_user_id):
             }  # current_user 객체를 직접 전달하지 않고 필요한 속성만 딕셔너리로 전달
         })
 
+
 # stay_join False로 변경
 @chatting.route('/stay_join', methods=['POST'])
 @admin_only
@@ -336,6 +356,29 @@ def update_stay_join():
     print("False로 변경")
     return jsonify({"success": True})
 
+
+@chatting.route('/reset_unread_count', methods=['POST'])
+@admin_only
+def reset_unread_count():
+    data = request.get_json()
+    room_id = data.get('room_id')
+    print(f"room_idasdfsadfsad: {room_id}")
+    # receive_user_name = data.get('receive_user_name')
+
+    chat_room = Room.query.get(room_id)
+
+    current_user_id = User.query.filter_by(name=current_user.name).first().id
+
+    if current_user_id == chat_room.sender_id:
+        chat_room.sender_unread_count = 0
+    else:
+        chat_room.receiver_unread_count = 0
+
+    db.session.commit()
+
+    return jsonify({"success": True})
+    
+    
 
 @socketio.on("connect")
 def test_connect():
@@ -380,10 +423,12 @@ def handle_message(data):
     is_sender = name == chat_room.sender.name
 
     if is_sender:
-        if chat_room.receiver_last_join is None:
+        # 수신자의 마지막 접속 시간이 없는 경우 읽지 않은 메시지 수 증가
+        if chat_room.receiver_stay_join is False:
             chat_room.receiver_unread_count += 1
     else:
-        if chat_room.sender_last_join is None:
+        # 송신자의 마지막 접속 시간이 없는 경우 읽지 않은 메시지 수 증가
+        if chat_room.sender_stay_join is False:
             chat_room.sender_unread_count += 1
     
     db.session.commit()
