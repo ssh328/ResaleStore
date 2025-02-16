@@ -124,13 +124,10 @@ def get_chat_rooms():
         # 현재 사용자가 채팅방의 송신자인지 수신자인지 확인
         is_sender = user_id == room_check.sender_id
         is_receiver = user_id == room_check.receiver_id
-        # 송신자인 경우 읽지 않은 메시지 수 가져오기
+        # 읽지 않은 메시지 수 가져오기
         if is_sender:
             unread_count = room_check.sender_unread_count
-        else:
-            unread_count = 0
-        # 수신자인 경우 읽지 않은 메시지 수 가져오기
-        if is_receiver:
+        elif is_receiver:
             unread_count = room_check.receiver_unread_count
         else:
             unread_count = 0
@@ -467,16 +464,17 @@ def on_leave(data):
     receive_user_id = User.query.filter_by(name=receive_user_name).first().id
     # receive_user_id = data['receive_user_id']
     
-    chat_room = Room.query.filter(
-        or_(
-            and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
-            and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
-        )
-    ).first()
-    
+    # chat_room = Room.query.filter(
+    #     or_(
+    #         and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
+    #         and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
+    #     )
+    # ).first()
+
+    chat_room = Room.query.get(room)
     if current_user.id == chat_room.sender_id:
         chat_room.sender_join = False
-    else:
+    elif current_user.id == chat_room.receiver_id:
         chat_room.receiver_join = False
     
     # 두 사용자 모두 채팅방을 나갔을 경우
