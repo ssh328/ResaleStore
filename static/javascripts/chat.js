@@ -408,30 +408,27 @@ socket.on('leave_response', (response) => {
 
 // 페이지 이동 시 stay_join False로 변경
 window.addEventListener('beforeunload', function(e) {
-    if (CURRENT_USER && ROOM_ID) {
-        // 새로고침 여부 확인
-        if (e.currentTarget.performance.navigation.type !== 1) {  // 1은 새로고침을 의미
-            fetch('/chat/stay_join', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    current_user: CURRENT_USER,
-                    room_id: ROOM_ID
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('stay_join 실행');
-                } else {
-                    console.error('stay_join 실행 실패');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+if (CURRENT_USER && ROOM_ID) {
+    fetch('/chat/stay_join', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_user: CURRENT_USER,
+            room_id: ROOM_ID
+        })
+    })
+    .then(response => response.json())  // 응답을 JSON으로 파싱
+    .then(data => {
+        if (data.success) {
+            console.log('stay_join 실행');
+        } else {
+            console.error('stay_join 실행 실패');
         }
-    }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 });
