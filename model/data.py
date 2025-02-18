@@ -124,4 +124,3 @@ class Review(db.Model):
     review_writer = db.Column(db.String(100), db.ForeignKey('users.name'), nullable=False)
     review = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
-

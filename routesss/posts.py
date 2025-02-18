@@ -1,4 +1,3 @@
-from crypt import methods
 from dotenv import load_dotenv
 import os
 
@@ -14,18 +13,21 @@ from cloudinary_dir.cloudinary import cloudinary
 import cloudinary.uploader
 
 load_dotenv()
+ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
 
+# 파일 확장자 확인
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# 게시물 블루프린트 생성
 posts = Blueprint('posts', __name__, template_folder='templates/product')
 
 
+# 게시물 검색
 def search_posts(query):
     # Post.title.contains(query): 게시물 제목에 쿼리 포함된 게시물 찾기
     return db.select(Post).filter(Post.title.contains(query)).order_by(Post.date.desc())
@@ -46,7 +48,7 @@ def all_products():
         like_posts = [like.post_id for like in current_user.likes]
 
     page = request.args.get('page', 1, type=int)
-    # request.args.get(): URL 쿼리 문자열에서 특정 매개변수 값을 가져오는 데 사용, 사용자가 GET 요청을 보낼 때 URL 에 포함된 매개변수를 출력
+    # request.args.get(): URL 쿼리 문자열에서 특정 매개변수 값을 가져오는 데 사용, 사용자가 GET 요청을 보낼 때 URL에 포함된 매개변수를 출력
 
     # 필터링 기능
     # 필터 초기화 시 default 값으로 url에서 category와 sort_by query 값 보이지 않게 함
@@ -111,7 +113,7 @@ def show_post(post_id):
     # query(Post): Post 모델에 대한 쿼리를 생성
     # get(post_id): Post 모델에서 기본 키가 post_id 인 레코드를 조회
 
-    img_urls = requested_post.img_url.split(',')
+    img_urls = requested_post.img_url.split(',') if requested_post.img_url else []
 
     return render_template('product/post.html', requested_post=requested_post,
                            logged_in=current_user.is_authenticated, img_urls=img_urls,
@@ -184,11 +186,11 @@ def edit(post_id):
         post.category = form.category.data
         post.body = form.textarea.data
 
-        # 삭제할 이미지 가져오기
-        delete_images = request.form.getlist('deleteImages')
-
         # 기존 이미지 URL 목록을 가져옴
         current_images = post.img_url.split(',') if post.img_url else []
+        
+        # 삭제할 이미지 가져오기
+        delete_images = request.form.getlist('deleteImages')
 
         if delete_images:
             # 삭제할 이미지 처리
@@ -250,4 +252,3 @@ def delete(post_id):
 
     flash('게시물이 삭제되었습니다.', 'success')
     return redirect(url_for('posts.all_products'))
-

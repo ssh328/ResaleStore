@@ -45,19 +45,6 @@ def is_author(f):
     return decorated_function
 
 
-# 관리자 전용 데코레이터
-# def admin_only(f):
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         # 만약 인증된 사용자가 아니라면 403 error 반환
-#         # abort 함수로 403 or 404 같은 HTTP 오류를 간단히 반환할 수 있음
-#         if not current_user.is_authenticated:
-#             return abort(403)
-
-#         # 그렇지 않으면 경로 기능 수행
-#         return f(*args, **kwargs)
-#     return decorated_function
-
 def chat_room_exists(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

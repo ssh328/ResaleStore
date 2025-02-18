@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, redirect, Blueprint, make_response, jsonify
+from flask import render_template, url_for, request, redirect, Blueprint, make_response, jsonify, flash
 from flask_login import current_user
 from datetime import datetime
 from flask_socketio import SocketIO, join_room, leave_room, emit
@@ -19,9 +19,6 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 def chat_room():
     # # 캐시 제어를 위한 헤더 추가, 항상 최신 데이터를 표시하도록 보장함
     # # make_response(): 응답 객체를 생성하고 캐시 제어 헤더를 추가하는 함수
-    # response = make_response(render_template('chat/new_chat_room.html', 
-    #                                       chat_room_list=get_chat_rooms(),
-    #                                       logged_in=current_user.is_authenticated))
     # # no-chche: 브라우저는 캐시된 데이터를 사용하기 전에 항상 서버에서 최신 데이터를 요청함
     # # no-store: 브라우저는 캐시된 데이터를 저장하지 않음
     # # must-revalidate: 캐시된 데이터가 유효하지 않은 경우, 반드시 서버에 데이터를 확인해야 함
@@ -44,7 +41,6 @@ def chat_room():
                 and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
             )
         ).first()
-
 
         if room:
             # 기존 방이 있고 현재 사용자가 sender인 경우
@@ -69,19 +65,6 @@ def chat_room():
             db.session.add(room)
             db.session.commit()
 
-
-        # if not room:
-        #     # 새 채팅방 생성
-        #     room = Room(
-        #         sender_id=current_user.id,
-        #         receiver_id=receive_user_id,
-        #         sender_join=True,
-        #         receiver_join=True,
-        #         date=current_time
-        #     )
-        #     db.session.add(room)
-        #     db.session.commit()
-
         response = make_response(render_template('chat/new_chat_room.html', 
                             chat_room_list=get_chat_rooms(),
                             logged_in=current_user.is_authenticated,
@@ -101,7 +84,6 @@ def chat_room():
     return response
 
 
-
 # 채팅방 목록 가져오기
 def get_chat_rooms():
     user_id = current_user.id
@@ -114,12 +96,13 @@ def get_chat_rooms():
         other_user = User.query.get(other_user_id)
 
         # 상대방 정보가 없을 경우 아니면 다른 사용자 정보가 있을 경우 room_check를 가져오는 로직 추가
-        room_check = Room.query.get(room.id) if other_user is None else Room.query.filter(
-            or_(
-                and_(Room.sender_id == current_user.id, Room.receiver_id == other_user.id),
-                and_(Room.sender_id == other_user.id, Room.receiver_id == current_user.id)
-            )
-        ).first()
+        # room_check = Room.query.get(room.id) if other_user is None else Room.query.filter(
+        #     or_(
+        #         and_(Room.sender_id == current_user.id, Room.receiver_id == other_user.id),
+        #         and_(Room.sender_id == other_user.id, Room.receiver_id == current_user.id)
+        #     )
+        # ).first()
+        room_check = Room.query.get(room.id)
 
         # 현재 사용자가 채팅방의 송신자인지 수신자인지 확인
         is_sender = user_id == room_check.sender_id
@@ -131,40 +114,14 @@ def get_chat_rooms():
             unread_count = room_check.receiver_unread_count
         else:
             unread_count = 0
-        
 
-        # if is_sender:
-        #     if room_check.sender_stay_join == True:
-        #         room_check.sender_unread_count = 0
-        #         db.session.commit()
-        #         unread_count = 0
-        # elif is_receiver:
-        #     if room_check.receiver_stay_join == True:
-        #         room_check.receiver_unread_count = 0
-        #         db.session.commit()
-        #         unread_count = 0
-
-
-        # # 최신 메시지 가져오기 (마지막 접속 시간 이후의 메시지만)
-        # is_sender = user_id == room_check.sender_id
-        # last_join_time = room_check.sender_last_join if is_sender else room_check.receiver_last_join
-        
-        # latest_message = Message.query.filter_by(room_id=room_check.id).filter(
-        #     Message.time >= last_join_time
-        # ).order_by(Message.time.desc()).first() if last_join_time else None
-
-        # message_time = latest_message.time.strftime('%Y-%m-%d') if latest_message != None else room_check.date.strftime('%Y-%m-%d')
-        
-        # # 채팅방 상태 확인
-        # room_status = room_check.sender_join if is_sender else room_check.receiver_join
-        # ------------------------------------------------------------
         # 최신 메시지 가져오기
         latest_message = Message.query.filter_by(room_id=room_check.id).order_by(Message.time.desc()).first()
 
         message_time = latest_message.time.strftime('%Y-%m-%d') if latest_message else room_check.date.strftime('%Y-%m-%d')
         
         # 채팅방 상태 확인
-        is_sender = user_id == room_check.sender_id
+        # is_sender = user_id == room_check.sender_id
         if is_sender:
             last_join_time = room_check.sender_last_join
             if last_join_time is not None:
@@ -216,9 +173,6 @@ def chat(receive_user_id):
     receive_user = User.query.get(receive_user_id)
     receive_user_name = receive_user.name if receive_user else None
     current_time = datetime.now()
-    
-    # if request.method == 'GET':
-    #     room_id = request.args.get('room_id')
 
     room_id = None
 
@@ -253,16 +207,6 @@ def chat(receive_user_id):
 
     if current_user.id != chat_room.sender_id and current_user.id != chat_room.receiver_id:
         return redirect(url_for('index'))
-    
-    # if current_user.id == chat_room.sender_id:
-    #     if chat_room.sender_stay_join == True:
-    #         chat_room.sender_unread_count = 0
-    #         db.session.commit()
-
-    # if current_user.id == chat_room.receiver_id:
-    #     if chat_room.receiver_stay_join == True:
-    #         chat_room.receiver_unread_count = 0
-    #         db.session.commit()
 
     if current_user.id == chat_room.sender_id:
         if chat_room.sender_join == False:
@@ -337,21 +281,41 @@ def chat(receive_user_id):
 @chatting.route('/stay_join', methods=['POST'])
 @admin_only
 def update_stay_join():
-    data = request.get_json()
-    room = data.get('room_id')
-    current_user = data.get('current_user')
-    chat_room = Room.query.get(room)
+    try:
+        data = request.get_json()
+        room = data.get('room_id')
+        current_user = data.get('current_user')
 
-    current_user_id = User.query.filter_by(name=current_user).first().id
-    
-    if current_user_id == chat_room.sender_id:
-        chat_room.sender_stay_join = False
-    else:
-        chat_room.receiver_stay_join = False
-    db.session.commit()
+        # 디버깅을 위한 로그 추가
+        print(f"Received room_id: {room}, type: {type(room)}")
+        print(f"Received current_user: {current_user}, type: {type(current_user)}")
+        
+        # 채팅방과 사용자가 존재하는지 확인
+        chat_room = Room.query.get(room)
+        if not chat_room:
+            flash('stay_join: 채팅방을 찾을 수 없습니다.', 'danger')
+            return redirect(url_for('chatting.chat_room'))
+            
+        user = User.query.filter_by(name=current_user).first()
+        if not user:
+            flash('사용자를 찾을 수 없습니다.', 'danger')
+            return redirect(url_for('chatting.chat_room'))
+        
+        print(f"Found user id: {user.id}, sender_id: {chat_room.sender_id}")
 
-    print("False로 변경")
-    return jsonify({"success": True})
+        # 트랜잭션 시작
+        if user.id == chat_room.sender_id:
+            chat_room.sender_stay_join = False
+        else:
+            chat_room.receiver_stay_join = False
+            
+        db.session.commit()
+        return jsonify({"success": True})
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'채팅방을 나가는 중 오류가 발생했습니다. {e}', 'danger')
+        return redirect(url_for('chatting.chat_room'))
 
 
 @chatting.route('/reset_unread_count', methods=['POST'])
@@ -366,17 +330,17 @@ def reset_unread_count():
 
     current_user_id = User.query.filter_by(name=current_user.name).first().id
 
-    if current_user_id == chat_room.sender_id:
-        chat_room.sender_unread_count = 0
-    else:
-        chat_room.receiver_unread_count = 0
+    if chat_room:
+        if current_user_id == chat_room.sender_id:
+            chat_room.sender_unread_count = 0
+        else:
+            chat_room.receiver_unread_count = 0
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify({"success": True})
+        return jsonify({"success": True})
     
     
-
 @socketio.on("connect")
 def test_connect():
     print('connect!')
@@ -458,56 +422,55 @@ def handle_message(data):
 
 @socketio.on('leave')
 def on_leave(data):
-    room = data['room_id']
-    name = data['current_user']
-    receive_user_name = data['receive_user_name']
-    receive_user_id = User.query.filter_by(name=receive_user_name).first().id
-    # receive_user_id = data['receive_user_id']
+    try:
+        room_id = data['room_id']
+        user_name = data['current_user']
+        
+        # 사용자 정보 조회
+        user = User.query.filter_by(name=user_name).first()
+        if not user:
+            # SocketIO 이벤트 핸들러에서는 flash, redirect 등의 함수를 사용할 수 없음
+            emit('error', {'success': False, 'message': '사용자를 찾을 수 없습니다.'}, 'danger')
+            return jsonify({'success': False})
+
+        # 채팅방 정보 조회
+        chat_room = Room.query.get(room_id)
+        if not chat_room:
+            emit('error', {'success': False, 'message': '채팅방을 찾을 수 없습니다.'}, 'danger')
+            return jsonify({'success': False})
+
+        try:
+            # 트랜잭션 시작
+            if user.id == chat_room.sender_id:
+                chat_room.sender_join = False
+            elif user.id == chat_room.receiver_id:
+                chat_room.receiver_join = False
+            
+            # 두 사용자 모두 채팅방을 나갔을 경우
+            if not chat_room.sender_join and not chat_room.receiver_join:
+                # 메시지 삭제
+                Message.query.filter_by(room_id=chat_room.id).delete()
+                # 채팅방 삭제
+                db.session.delete(chat_room)
+            
+            db.session.commit()
+            
+            # 채팅방 나가기
+            leave_room(room_id)
+            emit('status', {'success': True, 'data': f"{user_name}님이 나갔습니다."}, to=room_id)
+            emit('leave_response', {'success': True, 'message': '채팅방을 성공적으로 나갔습니다.'})
+            print('채팅방을 성공적으로 나갔습니다.')
+
+            
+        except Exception as e:
+            db.session.rollback()
+            emit('error', {'success': False, 'message': f'채팅방을 나가는 중 오류가 발생했습니다. {e}'}, 'danger')
+
+            
+    except Exception as e:
+        emit('error', {'success': False, 'message': '잘못된 요청입니다.'}, 'danger')
+
     
-    # chat_room = Room.query.filter(
-    #     or_(
-    #         and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
-    #         and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id)
-    #     )
-    # ).first()
-
-    chat_room = Room.query.get(room)
-    if current_user.id == chat_room.sender_id:
-        chat_room.sender_join = False
-    elif current_user.id == chat_room.receiver_id:
-        chat_room.receiver_join = False
-    
-    # 두 사용자 모두 채팅방을 나갔을 경우
-    if not chat_room.sender_join and not chat_room.receiver_join:
-        # 해당 채팅방의 모든 메시지 삭제
-        Message.query.filter_by(room_id=chat_room.id).delete()
-        # 채팅방 삭제
-        db.session.delete(chat_room)
-    
-    db.session.commit()
-    
-    leave_room(room)
-    print(f"{name} {room}방, bye")
-    emit('status', {'data': f"{name}님이 나갔습니다."}, to=room)
-
-
-# @socketio.on('stay_join')
-# def stay_join(data):
-#     room = data['room_id']
-#     current_user = data['current_user']
-#     chat_room = Room.query.get(room)
-
-#     current_user_id = User.query.filter_by(name=current_user).first().id
-    
-#     if current_user_id == chat_room.sender_id:
-#         chat_room.sender_stay_join = False
-#     else:
-#         chat_room.receiver_stay_join = False
-#     db.session.commit()
-
-#     print("False로 변경")
-#     return jsonify({"success": True})
-
 
 @socketio.on('disconnect')
 def disconnect(reason):
