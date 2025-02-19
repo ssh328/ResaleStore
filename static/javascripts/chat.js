@@ -405,6 +405,17 @@ socket.on('leave_response', (response) => {
     }
 });
 
+// 서버로부터의 응답을 처리하는 리스너
+socket.on('leave_response', (response) => {
+    if (response.success) {
+        console.log('채팅방 나가기 성공');
+        // 페이지 리디렉션
+        window.location.href = '/chat/chat_room';
+    } else {
+        alert(response.message || '채팅방을 나가는데 실패했습니다.');
+    }
+});
+
 
 // 페이지 이동 시 stay_join False로 변경
 window.addEventListener('beforeunload', function(e) {

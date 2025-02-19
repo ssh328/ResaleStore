@@ -293,7 +293,7 @@ def update_stay_join():
         # 채팅방과 사용자가 존재하는지 확인
         chat_room = Room.query.get(room)
         if not chat_room:
-            flash('stay_join: 채팅방을 찾을 수 없습니다.', 'danger')
+            flash('채팅방을 찾을 수 없습니다.', 'danger')
             return redirect(url_for('chatting.chat_room'))
             
         user = User.query.filter_by(name=current_user).first()

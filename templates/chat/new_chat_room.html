@@ -6,11 +6,15 @@
 {% endblock %}
 
 {% block content %}
+
+<div class="row d-flex align-items-center justify-content-center mt-5">
+    <div class="text-danger text-center">
+        {% include 'partial/flash.html' %}
+    </div>
+</div>
+
 <div class="container h-100" id="chat-container" data-redirect-url="{{ redirect_url }}">
     <div class="row justify-content-center h-100">
-        <div class="text-danger text-center">
-            {% include 'partial/flash.html' %}
-        </div>
         {% if chat_room_list %}
             {% set active_rooms = namespace(count=0) %}
             {% for room in chat_room_list %}
@@ -30,7 +34,7 @@
                                 data-receive-user-id="{{ room.receive_user_id }}"
                                     data-receive-user-name="{{ room.receiver_name }}" 
                                     style="cursor: pointer;">
-                                    <div class="d-flex align-items-center border-bottom p-3">
+                                    <div class="d-flex align-items-center border-bottom border-top p-3">
                                         <div class="position-relative">
                                             {% if room.other_user_profile: %}
                                                 <img src="{{room.other_user_profile}}" class="rounded-circle" width="50" height="50" alt="알 수 없음">
