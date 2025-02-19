@@ -10,7 +10,7 @@ from routesss.chat import socketio
 # app
 from app import app
 
-# data
+# data 모델
 from model.data import db, User, Post, Like, Room, Message
 
 # users 루트
@@ -22,6 +22,7 @@ from routesss.posts import posts
 # chat 루트
 from routesss.chat import chatting
 
+# .env 파일에 정의된 환경 변수를 로드하는 함수
 load_dotenv()
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
@@ -33,7 +34,9 @@ login_manager.init_app(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# SQLAlchemy 초기화
 db.init_app(app)
+
 
 # 데이터 베이스 생성
 with app.app_context():
@@ -94,5 +97,4 @@ def increase(post_id):
 
 
 if __name__ == '__main__' :
-    # app.run(debug=True)
     socketio.run(app, debug=True, allow_unsafe_werkzeug=True)

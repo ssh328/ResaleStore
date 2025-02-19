@@ -2,10 +2,11 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, EmailField, SubmitField, IntegerField, TextAreaField
 from wtforms.fields.choices import SelectField
 from wtforms.widgets import TextArea
-from wtforms.validators import DataRequired, Email, NumberRange, Length
+from wtforms.validators import DataRequired, NumberRange, Length
 
 # bleach: Html을 정리하고, XSS 공격을 방지하는 라이브러리
 import bleach
+
 
 # 사용자 정의 유효성 검사, 입력값에서 HTML 태그를 제거
 def escape_html(form, field):
@@ -34,6 +35,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Log In')
 
 
+# CREATE POST FORM
 class CreatePostForm(FlaskForm):
     title = StringField("제목", validators=[DataRequired()])
     price = IntegerField("가격", validators=[DataRequired(), NumberRange(min=0, max=1000000000)])
@@ -65,6 +67,7 @@ class CreatePostForm(FlaskForm):
     submit = SubmitField("등록")
 
 
+# CHANGE PASSWORD FORM
 class ChangePasswordForm(FlaskForm):
     new_password = PasswordField(validators=[DataRequired(), Length(min=8)])
     submit = SubmitField("변경")
