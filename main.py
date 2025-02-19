@@ -44,7 +44,6 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, user_id)
-    # return User.query.get(user_id)
 
 
 # 메인 페이지
@@ -87,7 +86,9 @@ def increase(post_id):
 
     db.session.commit()
 
-    return jsonify({'like_cnt': post.like_cnt})
+    return jsonify({
+        'like_cnt': post.like_cnt
+        })
     # jsonify(): 서버에서 JSON 형식의 응답을 클라이언트에게 반환할 때 사용
     # Python 딕셔너리 {'data_counter': counter} 를 JSON 형식으로 반환
 

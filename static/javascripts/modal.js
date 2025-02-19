@@ -1,6 +1,16 @@
-const myModal = document.getElementById('myModal')
-const myInput = document.getElementById('myInput')
+const deleteModal = document.getElementById('deleteModal')
+const deleteInput = document.getElementById('deleteInput')
 
-myModal.addEventListener('shown.bs.modal', () => {
-  myInput.focus()
+deleteModal.addEventListener('shown.bs.modal', () => {
+  if (deleteInput) {
+    deleteInput.focus()
+  }
+})
+
+deleteModal.addEventListener('show.bs.modal', () => {
+  deleteModal.removeAttribute('inert')
+})
+
+deleteModal.addEventListener('hide.bs.modal', () => {
+  deleteModal.setAttribute('inert', '')
 })

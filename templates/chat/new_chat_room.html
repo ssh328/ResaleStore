@@ -1,0 +1,117 @@
+{% extends 'partial/header.html' %}
+{% block head %}
+<!-- 올바른 Socket.IO 클라이언트 라이브러리 경로 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/chat.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="row d-flex align-items-center justify-content-center mt-5">
+    <div class="text-danger text-center">
+        {% include 'partial/flash.html' %}
+    </div>
+</div>
+
+<div class="container h-100" id="chat-container" data-redirect-url="{{ redirect_url }}">
+    <div class="row justify-content-center h-100">
+        {% if chat_room_list %}
+            {% set active_rooms = namespace(count=0) %}
+            {% for room in chat_room_list %}
+                {% if room.room_check == True %}
+                    {% set active_rooms.count = active_rooms.count + 1 %}
+                {% endif %}
+            {% endfor %}
+
+            {% if active_rooms.count > 0 %}
+                <div class="col-md-4 col-lg-4 mt-4 pe-0">
+                    <div class="chat-room-list">
+                        {% for room in chat_room_list %}
+                            {% if room.room_check == True %}
+                                <!-- 채팅방 목록 -->
+                                <li class="chat-room-item text-decoration-none list-group-item" 
+                                data-room-id="{{ room.room_id }}" 
+                                data-receive-user-id="{{ room.receive_user_id }}"
+                                    data-receive-user-name="{{ room.receiver_name }}" 
+                                    style="cursor: pointer;">
+                                    <div class="d-flex align-items-center border-bottom border-top p-3">
+                                        <div class="position-relative">
+                                            {% if room.other_user_profile: %}
+                                                <img src="{{room.other_user_profile}}" class="rounded-circle" width="50" height="50" alt="알 수 없음">
+                                            {% else: %}
+                                                <img src="#" alt="알 수 없음">
+                                            {% endif %}
+                                        </div>
+                                        <div class="ms-3 flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0 text-dark">{{ room.receiver_name }}</h6>
+                                                <!-- <div class="d-flex align-items-center">
+                                                    {% if room.unread_count > 0 %}
+                                                    <span class="badge bg-danger rounded-pill me-2">{{ room.unread_count }}</span>
+                                                    {% endif %}
+                                                    <small class="text-muted">{{ room.message_time }}</small>
+                                                </div> -->
+                                                <small class="text-muted">{{ room.message_time }}</small>
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <p class="mb-0 text-muted text-truncate">{{ room.latest_message }}</p>
+                                                {% if room.unread_count > 0 %}
+                                                <span class="badge bg-danger rounded-pill me-2">{{ room.unread_count }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-md-8 col-lg-8 ps-0" id="chat-room-widget">
+                    <div class="mt-3" id="chat-room-widget-content" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center border-bottom border-top">
+                            <h5 id="chat-room-title" class="text-center mt-3 ps-3 mb-3" style="display: none;"></h5>
+                            <div class="text-center mt-3 pe-4">
+                                <button class="btn btn-outline-danger btn-sm mb-3" id="leave_chat_btn">채팅방 나가기</button>
+                            </div>
+                        </div>
+                        <div class="chat-content">
+                            <div id="msgs-container">
+                                <ul id="messages"></ul>
+                            </div>
+                            <div>
+                                <input class="form-control w-100" type="text" placeholder="메시지를 입력하세요." id="text" name="message"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-md-12 col-lg-12">
+                    <div class="text-center mt-5">
+                        <p class="text-muted">채팅방이 없습니다.</p>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="col-md-12 col-lg-12">
+                <div class="text-center mt-5">
+                    <p class="text-muted">채팅방이 없습니다.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='javascripts/chat.js') }}"></script>
+
+<style>
+    .chat-room-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .text-truncate {
+        max-width: 250px;
+    }
+</style>
+
+{% endblock %}

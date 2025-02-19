@@ -74,8 +74,10 @@ class Room(db.Model):
     receiver_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     # receiver_id은 ForeignKey를 Post 테이블의 author_id로 해야할까?
     # sender, receiver 이렇게 안해도 될듯... 어차피 방 안에 같이 있고 receiver가 sender 에게 대화를 걸 수 있어서...차라리 user1, user2 가 나을듯
+    # 이 join은 '나가기 버튼' 누르기 전 방을 나가지 않은 상태를 표시하기 위해 사용
     sender_join = db.Column(db.Boolean, nullable=False, default=False)
     receiver_join = db.Column(db.Boolean, nullable=False, default=False)
+    date = db.Column(db.DateTime, nullable=False)
 
 
     # **
@@ -88,6 +90,12 @@ class Room(db.Model):
     sender_unread_count = db.Column(db.Integer, default=0)
     receiver_unread_count = db.Column(db.Integer, default=0)
 
+    # 이 join은 채팅방을 클릭해서 접속 중일 때, 그리고 접속이 끊겼을 때 확인하기 위해 사용
+    sender_stay_join = db.Column(db.Boolean, nullable=False, default=False)
+    receiver_stay_join = db.Column(db.Boolean, nullable=False, default=False)
+
+    sender_unread_count = db.Column(db.Integer, default=0)
+    receiver_unread_count = db.Column(db.Integer, default=0)
 
     # foreign_keys: 두 개의 외래 키가 같은 테이블을 참조할 때 사용,
     # foreign_keys 를 사용하여 어떤 외래 키가 이 관계에 사용될지를 명확하게 지정해 주어야 함
@@ -116,4 +124,3 @@ class Review(db.Model):
     review_writer = db.Column(db.String(100), db.ForeignKey('users.name'), nullable=False)
     review = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
-
