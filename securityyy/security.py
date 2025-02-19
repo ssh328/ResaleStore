@@ -43,27 +43,3 @@ def is_author(f):
             
         return f(*args, **kwargs)
     return decorated_function
-
-
-def chat_room_exists(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # kwargs에서 receive_user_id를 가져옴
-        receive_user_id = kwargs.get('receive_user_id')
-
-        # 채팅방 존재 여부 확인 (current_user와 receive_user_id로 필터링)
-        chat_room = Room.query.filter(
-            or_(
-                and_(Room.sender_id == current_user.id, Room.receiver_id == receive_user_id),
-                and_(Room.sender_id == receive_user_id, Room.receiver_id == current_user.id),
-            )
-        ).first()
-
-        if chat_room is None or (chat_room.sender_join is False and chat_room.sender_id == current_user.id) or (chat_room.receiver_join is False and chat_room.receiver_id == current_user.id):
-            # 채팅방이 없거나, 현재 사용자가 방을 나간 경우 404 오류 반환
-            flash('존재하지 않는 채팅방입니다!', 'danger')
-            return redirect(url_for('users.chat_room'))
-
-        # 채팅방이 존재할 경우 원래 뷰 함수 실행
-        return f(*args, **kwargs)
-    return decorated_function
