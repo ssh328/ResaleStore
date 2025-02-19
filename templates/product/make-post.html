@@ -8,6 +8,9 @@
 <form action="{{ url_for('posts.add_new_products_post') }}" method="POST" enctype="multipart/form-data" novalidate class="validated-form">
     <div class="container pb-5" style="max-width: 795px;">
         <div class="row d-flex align-items-center justify-content-center mt-5 px-3">
+            <div class="text-danger text-center">
+                {% include 'partial/flash.html' %}
+            </div>
             <div class="mb-3">
                 <label for="title" class="form-label fw-bold">{{ form.title.label }}</label>
                 {{ form.title(class="form-control", id="title", placeholder="글 제목", required=True) }}

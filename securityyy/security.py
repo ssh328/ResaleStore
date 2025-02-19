@@ -16,7 +16,7 @@ def admin_only(f):
         if not current_user.is_authenticated:
             # 현재 요청된 전체 URL을 저장 (쿼리 파라미터 포함)
             next_url = request.path
-            flash('You must be signed in first!', 'danger')
+            flash('먼저 로그인해주세요!', 'danger')
             return redirect(url_for('users.login', next=next_url))
 
         # 인증된 경우 원래 뷰 함수 실행

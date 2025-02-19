@@ -1,14 +1,11 @@
 from dotenv import load_dotenv
 import os
-
 from flask import render_template, url_for, request, redirect, flash, jsonify, Blueprint
 from datetime import datetime
 from flask_login import current_user
-
 from model.data import Post, db, Like
 from forms import CreatePostForm
 from securityyy.security import admin_only, is_author
-
 from cloudinary_dir.cloudinary import cloudinary
 import cloudinary.uploader
 
@@ -17,20 +14,17 @@ ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-
 # 파일 확장자 확인
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-# 게시물 블루프린트 생성
-posts = Blueprint('posts', __name__, template_folder='templates/product')
-
 
 # 게시물 검색
 def search_posts(query):
     # Post.title.contains(query): 게시물 제목에 쿼리 포함된 게시물 찾기
     return db.select(Post).filter(Post.title.contains(query)).order_by(Post.date.desc())
+
+# 게시물 블루프린트 생성
+posts = Blueprint('posts', __name__, template_folder='templates/product')
 
 
 # 모든 게시물 보여주는 창
@@ -47,17 +41,15 @@ def all_products():
     if current_user.is_authenticated:
         like_posts = [like.post_id for like in current_user.likes]
 
-    page = request.args.get('page', 1, type=int)
     # request.args.get(): URL 쿼리 문자열에서 특정 매개변수 값을 가져오는 데 사용, 사용자가 GET 요청을 보낼 때 URL에 포함된 매개변수를 출력
+    page = request.args.get('page', 1, type=int)
 
     # 필터링 기능
     # 필터 초기화 시 default 값으로 url에서 category와 sort_by query 값 보이지 않게 함
     category = request.args.get('category', default=None)
     sort_by = request.args.get('sort_by', default='recent')
     start_price = request.args.get('start_price', type=int)
-    # print(start_price)
     end_price = request.args.get('end_price', type=int)
-    # print(end_price)
 
     query = db.select(Post)
 
@@ -106,12 +98,8 @@ def all_products():
 # 게시물 클릭 시 그 게시물 내용 보여 주는 창
 @posts.route('/post/<string:post_id>', methods=["GET", "POST"])
 def show_post(post_id):
-    requested_post = db.get_or_404(Post, post_id)
     # Post 모델에서 기본 키가 post_id 인 레코드를 조회하고, 존재하지 않으면 404 반환
-
-    # requested_post = db.session.query(Post).get(post_id)
-    # query(Post): Post 모델에 대한 쿼리를 생성
-    # get(post_id): Post 모델에서 기본 키가 post_id 인 레코드를 조회
+    requested_post = db.get_or_404(Post, post_id)
 
     img_urls = requested_post.img_url.split(',') if requested_post.img_url else []
 
@@ -135,7 +123,8 @@ def add_new_products_post():
         invalid_files = [file.filename for file in files if not allowed_file(file.filename)]
 
         if invalid_files:
-            return jsonify({"error": f"허용되지 않은 파일 형식: {', '.join(invalid_files)}"}), 400
+            flash(f"허용되지 않은 파일 형식: {', '.join(invalid_files)}", 'danger')
+            return redirect(url_for('posts.add_new_products_post'))
 
         img_url_list = []
         public_id_list = []
@@ -162,6 +151,7 @@ def add_new_products_post():
 
         new_post_id = new_post.id
 
+        flash('게시물이 생성되었습니다.', 'success')
         return redirect(url_for('posts.show_post', post_id=new_post_id))
 
     return render_template('product/make-post.html', form=form, current_user=current_user,
@@ -213,7 +203,8 @@ def edit(post_id):
             invalid_files = [file.filename for file in files if not allowed_file(file.filename)]
             
             if invalid_files:
-                return jsonify({"error": f"허용되지 않은 파일 형식: {', '.join(invalid_files)}"}), 400
+                flash(f"허용되지 않은 파일 형식: {', '.join(invalid_files)}", 'danger')
+                return redirect(url_for('posts.edit', post_id=post_id))
             
             # 새 이미지 업로드
             for file in files:
@@ -224,6 +215,8 @@ def edit(post_id):
             post.img_url = ','.join(current_images)
             
         db.session.commit()
+
+        flash('게시물이 수정되었습니다.', 'success')
         return redirect(url_for('posts.show_post', post_id=post_id))
         
     return render_template('product/edit-post.html', form=form, post=post,

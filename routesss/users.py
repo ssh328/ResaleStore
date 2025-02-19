@@ -1,26 +1,28 @@
-from flask import render_template, url_for, request, redirect, flash, Blueprint, jsonify, make_response
+from flask import render_template, url_for, request, redirect, flash, Blueprint, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user
-from sqlalchemy import or_, and_
-
+from sqlalchemy import or_
 from forms import SignUpForm, LoginForm, ChangePasswordForm
-from model.data import db, User, Post, Like, Room, Message, Review
-from app import app
+from model.data import db, User, Post, Like, Room, Review
 from securityyy.security import admin_only
 from cloudinary_dir.cloudinary import cloudinary
 import cloudinary.uploader
 
 users = Blueprint('users', __name__, template_folder='templates/users')
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 # 로그인 창
 @users.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-
         email = form.email.data
         password = form.password.data
-
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password, password):
@@ -30,16 +32,12 @@ def login():
                 return redirect(next_url)
             flash('반갑습니다!', 'success')
             return redirect(url_for('posts.all_products'))
-
-        elif not user:
-            flash('이메일이 존재하지 않아요!', 'danger')
-            return redirect(url_for('users.login'))
-
-        elif not check_password_hash(user.password, password):
-            flash('비밀번호가 일치하지 않아요! 다시 시도 해주세요!', 'danger')
+        else:
+            flash('회원정보가 일치하지 않아요!', 'danger')
             return redirect(url_for('users.login'))
 
     return render_template('users/login.html', form=form)
+
 
 # 로그아웃 창
 @users.route('/logout')
@@ -93,12 +91,7 @@ def my_page():
     # 현재 유저가 좋아요 버튼을 누른 모든 게시물을 불러옴
     # Like 데이터베이스에서 로그인 된 email 과 일치된 데이터를 불러옴
     like_post = Like.query.filter_by(user_email=current_user.email).all()
-
-    like_post_list = []
-    for like in like_post:
-        # 좋아요 버튼을 누른 email 의 게시물 id 를 탐색
-        post = Post.query.get(like.post_id)
-        like_post_list.append(post)
+    like_post_list = [Post.query.get(like.post_id) for like in like_post]
 
     # 현재 로그인 한 유저가 좋아요 누른 게시물 id 목록을 가져옴
     like_posts = []
@@ -129,11 +122,6 @@ def my_page():
 def upload_profile_image(user_id):
     if request.method == "POST":
 
-        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-
-        def allowed_file(filename):
-            return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
         requested_user_id = db.get_or_404(User, user_id)
 
         # 파일이 첨부되었는지 확인
@@ -152,7 +140,9 @@ def upload_profile_image(user_id):
         
         if not allowed_file(file.filename):
             invalid_file = file.filename
-            return jsonify({"error": f"허용되지 않은 파일 형식: {', '.join(invalid_file)}"}), 400
+            flash(f"허용되지 않은 파일 형식: {invalid_file}", 'danger')
+            return redirect(url_for('users.my_page', name=current_user.name,
+                                    logged_in=current_user.is_authenticated))
 
         # 이전 프로필 이미지 URL 저장
         previous_image_url = requested_user_id.profile_image_name
@@ -165,32 +155,16 @@ def upload_profile_image(user_id):
             if previous_image_url != 'https://res.cloudinary.com/dccnoyixy/image/upload/v1737569274/Products/xunetnnx7ajjqo2vay3z.png':
                 public_id = previous_image_url.split('/')[-1].split('.')[0]  # URL에서 public_id 추출
                 cloudinary.uploader.destroy(f"Products/{public_id}")  # Cloudinary에서 이미지 삭제
-                print(f"이전 이미지 {public_id} 삭제됨")
 
         requested_user_id.profile_image_name = img_url
         db.session.commit()
 
+        flash('프로필 이미지가 업데이트 되었습니다.', 'success')
         return redirect(url_for('users.profile_edit', 
                                 name=current_user.name, 
                                 logged_in=current_user.is_authenticated, 
                                 current_user=current_user))
-
-        # invalid_files = [file.filename for file in files if not allowed_file(file.filename)]
-
-        
-
-        # if file and allowed_file(file.filename):
-        #     # secure_filename(): 파일 이름을 안전하게 만들어주는 함수
-        #     filename = secure_filename(file.filename)
-
-        #     # file.save(): 서버의 지정된 폴더에 파일을 저장하는 역할
-        #     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        #     img_path = url_for('static', filename=f'uploads/{filename}')
-
-        #     requested_user_id.profile_image_name = filename
-        #     db.session.commit()
-        #     return render_template('my_page.html', img_path=img_path, name=current_user.name
-        #                            ,logged_in=current_user.is_authenticated)
+    
     return render_template('users/my_page.html', name=current_user.name, logged_in=current_user.is_authenticated)
 
 
@@ -211,9 +185,6 @@ def my_post():
     page = request.args.get('page', 1, type=int)
     posts = Post.query.filter_by(author_id=current_user.id).paginate(page=page, per_page=20, error_out=False)
 
-    # 현재 유저가 작성한 모든 게시물 불러옴
-    # author_post = Post.query.filter_by(author_id=current_user.id).all()
-
     # 현재 로그인 한 유저가 좋아요 누른 게시물 id 목록을 가져옴
     like_posts = []
     if current_user.is_authenticated:
@@ -230,23 +201,9 @@ def my_post():
 @users.route('/my_page/like_post')
 @admin_only
 def like_post():
-    # like_post = Like.query.filter_by(user_email=current_user.email).all()
-
     page = request.args.get('page', 1, type=int)
     posts = Like.query.filter_by(user_email=current_user.email).paginate(page=page, per_page=20, error_out=False)
-
-    like_post_list = []
-    for like in posts.items:
-        post = Post.query.get(like.post_id)
-        like_post_list.append(post)
-    
-    # like_post_list = []
-    # for like in like_post:
-    #     # 좋아요 버튼을 누른 email 의 게시물 id 를 탐색
-    #     post = Post.query.get(like.post_id)
-    #     like_post_list.append(post)
-
-    # print(like_post_list)
+    like_post_list = [Post.query.get(like.post_id) for like in posts.items]
 
     like_posts = []
     if current_user.is_authenticated:
@@ -259,6 +216,7 @@ def like_post():
                             like_posts=like_posts)
 
 
+# 비밀번호 변경
 @users.route('/change_password', methods=['GET', 'POST'])
 @admin_only
 def change_password():
@@ -297,11 +255,11 @@ def change_password():
     return render_template('users/change_password.html', form=form, change_password_form=change_password_form, logged_in=current_user.is_authenticated, authenticated=authenticated)
 
 
+# 계정 삭제
 @users.route('/delete_account', methods=['GET', 'POST'])
 @admin_only
 def delete_account():
     form = LoginForm()
-    # delete_account_form = DeleteAccountForm()
     authenticated = None
 
     # 본인 인증
@@ -326,7 +284,6 @@ def delete_account():
         # 현재 사용자가 참여하고 있는 모든 채팅방 삭제
         rooms = Room.query.filter(or_(Room.sender_id == current_user.id, Room.receiver_id == current_user.id)).all()
         for room in rooms:
-            # db.session.delete(room)  # 채팅방 삭제
             if room.sender_id == current_user.id:
                 room.sender_id = "Unknown"  # 기본 사용자 ID로 변경
                 room.sender_join = False
@@ -350,29 +307,21 @@ def delete_account():
     return render_template('users/delete_account.html', form=form, logged_in=current_user.is_authenticated, authenticated=authenticated)
 
 
+# 유저 프로필 창
 @users.route('/users/<string:user_name>')
 def user_profile(user_name):
-
     # get_or_404(): 기본적으로 기본키를 사용
     # 이를 해결하기 위해 filter_by() 사용
     user = User.query.filter_by(name=user_name).first_or_404()  # user_name 대신 name 필드로 검색
-
     page = request.args.get('page', 1, type=int)
 
     # 상대 유저가 작성한 모든 게시물 불러옴
     posts = Post.query.filter_by(author_id=user.id).order_by(Post.date.desc()).paginate(page=page, per_page=20, error_out=False)
     
-    # reviews = Review.query.filter_by(user_name=user.name).all()
-    
     reviews_query = db.session.query(Review, User.profile_image_name)\
         .join(User, Review.review_writer == User.name)\
         .filter(Review.user_name == user.name)\
         .all()
-    
-    reviews_query = db.session.query(Review, User.profile_image_name)\
-            .join(User, Review.review_writer == User.name)\
-            .filter(Review.user_name == user.name)\
-            .all()
         
     # 쿼리 결과를 사용하기 쉬운 형태로 변환
     reviews = [{
@@ -382,8 +331,6 @@ def user_profile(user_name):
         'review_writer': review.review_writer,
         'review_id': review.id
     } for review, profile_image in reviews_query]
-    
-    print(reviews)
 
     # 현재 로그인 한 유저가 좋아요 누른 게시물 id 목록을 가져옴
     like_posts = []
@@ -400,6 +347,7 @@ def user_profile(user_name):
                            )
 
 
+# 리뷰 등록
 @users.route('/reviews', methods=['POST'])
 @admin_only
 def reviews():
@@ -411,7 +359,6 @@ def reviews():
         if rating == None:
             rating = 1
 
-        print(review_text,user_name,rating)
         new_review = Review(
             user_name=user_name,
             review=review_text,
@@ -429,6 +376,7 @@ def reviews():
         return redirect(url_for('users.user_profile', user_name=request.args.get('user_name')))
     
 
+# 리뷰 삭제
 @users.route('/delete_review', methods=['POST'])
 @admin_only
 def delete_review():
