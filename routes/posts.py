@@ -5,7 +5,7 @@ from datetime import datetime
 from flask_login import current_user
 from model.data import Post, db, Like
 from forms import CreatePostForm
-from securityyy.security import admin_only, is_author
+from security.security import admin_only, is_author
 from cloudinary_dir.cloudinary import cloudinary
 import cloudinary.uploader
 

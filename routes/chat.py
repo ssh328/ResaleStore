@@ -4,7 +4,7 @@ from datetime import datetime
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from sqlalchemy import or_, and_
 from model.data import Room, Message, db, User
-from securityyy.security import admin_only
+from security.security import admin_only
 from app import app
 
 chatting = Blueprint('chatting', __name__, template_folder='templates/chat')

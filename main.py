@@ -3,8 +3,8 @@ from flask_login import current_user
 from dotenv import load_dotenv
 import os
 
-from securityyy.security import login_manager, admin_only
-from routesss.chat import socketio
+from security.security import login_manager, admin_only
+from routes.chat import socketio
 
 
 # app
@@ -14,13 +14,13 @@ from app import app
 from model.data import db, User, Post, Like, Room, Message
 
 # users 루트
-from routesss.users import users
+from routes.users import users
 
 # posts 루트
-from routesss.posts import posts
+from routes.posts import posts
 
 # chat 루트
-from routesss.chat import chatting
+from routes.chat import chatting
 
 # .env 파일에 정의된 환경 변수를 로드하는 함수
 load_dotenv()

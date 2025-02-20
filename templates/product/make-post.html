@@ -50,59 +50,7 @@
     </div>
 </form>
 
-<script>
-    const fileInput = document.getElementById('formFileMultiple');
-    const fileNameInput = document.getElementById('fileNameInput');
-    const selectFilesButton = document.getElementById('selectFilesButton');
-    const fileCountMessage = document.getElementById('fileCountMessage');
-    const maxFiles = 10;
-
-    // 파일 선택 버튼 클릭 시 파일 선택 창 열기
-    selectFilesButton.addEventListener('click', () => {
-      fileInput.click();
-    });
-
-    // 파일 선택 후 파일 이름 표시
-    fileInput.addEventListener('change', () => {
-      let fileNames = Array.from(fileInput.files).map(file => file.name);
-
-      // 파일 개수 제한 처리
-      if (fileNames.length > maxFiles) {
-        alert(`최대 ${maxFiles}개의 파일만 선택할 수 있습니다.`);
-        const dataTransfer = new DataTransfer();
-        Array.from(fileInput.files)
-          .slice(0, maxFiles)
-          .forEach(file => dataTransfer.items.add(file));
-        fileInput.files = dataTransfer.files;
-        fileNames = Array.from(fileInput.files).map(file => file.name);
-      }
-
-      // 파일 이름 업데이트
-      fileNameInput.value = fileNames.join(', ') || '선택된 파일 없음';
-
-      // 파일 개수 메시지 업데이트
-      fileCountMessage.textContent = `선택된 파일: ${fileInput.files.length}개 / 최대 ${maxFiles}개`;
-    });
-
-
-    // 유효성 검사 후 로딩 중 표시
-    document.querySelector('form').addEventListener('submit', function(event) {
-        if (!this.checkValidity()) {
-            // 폼의 유효성을 검사, 유효하지 않으면 true 반환
-            event.preventDefault(); // 유효성 검사 실패 시 제출 방지
-            this.classList.add('was-validated'); // 유효성 검사 스타일 추가
-            return;
-        }
-        
-        const saveButton = document.getElementById('saveButton');
-        const originalWidth = saveButton.offsetWidth; // 원래 너비 저장
-        saveButton.innerHTML = `
-                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                <span class="visually-hidden" role="status">Loading...</span>
-        `;
-        saveButton.style.width = originalWidth + 'px'; // 원래 너비로 설정
-        saveButton.disabled = true; // 버튼 비활성화
-    });
-</script>
+<script src="{{ url_for('static', filename='javascripts/file_upload_handler.js') }}"></script>
+<script src="{{ url_for('static', filename='javascripts/form_submit_handler.js') }}"></script>
 
 {% endblock %}

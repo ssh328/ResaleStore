@@ -110,60 +110,6 @@
 </div>
 
 <script src="{{ url_for('static', filename='javascripts/modal.js') }}"></script>
-
-<script>
-    // 유효성 검사 후 로딩 중 표시
-    document.getElementById('deleteForm').addEventListener('submit', function(event) {
-        const deleteButton = document.getElementById('deleteButton');
-        const originalWidth = deleteButton.offsetWidth; // 원래 너비 저장
-
-        // 폼의 유효성을 검사
-        if (!this.checkValidity()) {
-            event.preventDefault(); // 유효성 검사 실패 시 제출 방지
-            this.classList.add('was-validated'); // 유효성 검사 스타일 추가
-            return;
-        }
-
-        deleteButton.innerHTML = `
-            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-            <span class="visually-hidden" role="status">Loading...</span>
-        `;
-        deleteButton.style.width = originalWidth + 'px'; // 원래 너비로 설정
-        deleteButton.disabled = true; // 버튼 비활성화
-    });
-
-
-    // // 채팅 버튼 클릭 시 채팅 페이지로 이동
-    // document.getElementById('chat_btn').addEventListener('click', function() {
-    //     const receiveUserId = this.getAttribute('data-receive-user-id');
-    //     const reveiverUserName = this.getAttribute('data-receive-user-name');
-
-    //     fetch('/chat/chat_room', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body: JSON.stringify({
-    //             receive_user_id: receiveUserId,
-    //             receive_user_name: reveiverUserName
-    //         })
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         if (data.success) {
-    //             window.location.href = data.redirect_url;
-    //         } else {
-    //             alert('채팅 방 생성에 실패했습니다.');
-    //         }
-    //     })
-    //     .catch(error => {
-    //         console.error('채팅 방 생성 오류:', error);
-    //         alert('채팅 방 생성에 실패했습니다.');
-    //     })
-    // })
-
-
-
-</script>
+<script src="{{ url_for('static', filename='javascripts/delete_form_upload_handler.js') }}"></script>
 
 {% endblock %}

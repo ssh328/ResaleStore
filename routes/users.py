@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, current_user
 from sqlalchemy import or_
 from forms import SignUpForm, LoginForm, ChangePasswordForm
 from model.data import db, User, Post, Like, Room, Review
-from securityyy.security import admin_only
+from security.security import admin_only
 from cloudinary_dir.cloudinary import cloudinary
 import cloudinary.uploader
 

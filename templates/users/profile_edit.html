@@ -15,13 +15,13 @@
               method="post" class="mt-4 mb-3">
             <div class="d-flex flex-column align-items-center">
                 <div class="mb-3" id="image_preview" data-bs-toggle="modal" data-bs-target="#imageModal"">
-                    <img id="preview_img" class="rounded-circle border shadow-sm my_page_profile_size"
+                    <img id="preview_img" class="rounded-circle border shadow-sm my_page_profile_size" data-original-src="{{ current_user.profile_image_name }}"
                     src="{{ current_user.profile_image_name }}">
                 </div>
                 <div class="d-flex align-items-center mt-3">
                     <a href="#" id="profile_edit_btn" class="btn btn-outline-warning">편집</a>
                     <input id="file_input" name="img" type="file" class="form-control d-none" onchange="toggleSubmitButton()">
-                    <button id="submit_button" type="submit" class="btn btn-outline-warning ms-2" disabled>변경하기</button>
+                    <button id="saveButton" type="submit" class="btn btn-outline-warning ms-2" disabled>변경하기</button>
                 </div>
             </div>
         </form>
@@ -45,48 +45,7 @@
     </div>
 </div>
 
-
-<script>
-    document.getElementById('profile_edit_btn').addEventListener('click', () => {
-        document.getElementById('file_input').click();
-    });
-
-    function toggleSubmitButton() {
-        const fileInput = document.getElementById('file_input');
-        const submitButton = document.getElementById('submit_button');
-        const previewImg = document.getElementById('preview_img');
-        const originalSrc = "{{ current_user.profile_image_name }}";    // 원본 이미지 경로
-
-        
-        submitButton.disabled = !fileInput.files.length
-        submitButton.className = fileInput.files.length ? 'btn btn-warning ms-2' : 'btn btn-outline-warning ms-2'
-
-        // 미리보기 이미지 업데이트
-        if (fileInput.files.length) {
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                document.getElementById('image_preview').style.display = 'block';
-            }
-            reader.readAsDataURL(file);
-        } else {
-            previewImg.src = originalSrc; // current_user.profile_image_name으로 복원
-            document.getElementById('image_preview').style.display = 'block';   // 사진을 보이게 함
-        }   
-    }
-
-    // 이미지 변경 시 로딩 중 표시
-    document.querySelector('form').addEventListener('submit', function() {
-        const submitButton = document.getElementById('submit_button');
-        const originalWidth = submitButton.offsetWidth; // 원래 너비 저장
-        submitButton.innerHTML = `
-                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                <span class="visually-hidden" role="status">Loading...</span>
-        `;
-        submitButton.style.width = originalWidth + 'px'; // 원래 너비로 설정
-        submitButton.disabled = true; // 버튼 비활성화
-    });
-</script>
+<script src="{{ url_for('static', filename='javascripts/user_profile_upload.js') }}"></script>
+<script src="{{ url_for('static', filename='javascripts/form_submit_handler.js') }}"></script>
 
 {% endblock %}
