@@ -10,6 +10,7 @@
     <h2 class="fw-bold">나의 상품</h2>
 </div>
 
+{% if all_data %}
 <div class="row row row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 mb-5">
     {% for data in all_data %}
     <div class="col">
@@ -47,6 +48,13 @@
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="col-md-12 col-lg-12 d-flex justify-content-center">
+    <div class="text-center mt-5">
+        <p class="text-muted">게시물이 없습니다.</p>
+    </div>
+</div>
+{% endif %}
 
 <!--PAGINATION-->
 <div class="d-flex justify-content-center mb-5">

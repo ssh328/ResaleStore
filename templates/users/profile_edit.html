@@ -37,7 +37,7 @@
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" inert>
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <img src="{{ current_user.profile_image_name }}" class="img-fluid" alt="큰 이미지" style="width: 100%; height: auto;">
@@ -47,5 +47,5 @@
 
 <script src="{{ url_for('static', filename='javascripts/user_profile_upload.js') }}"></script>
 <script src="{{ url_for('static', filename='javascripts/form_submit_handler.js') }}"></script>
-
+<script src="{{ url_for('static', filename='javascripts/modal.js') }}"></script>
 {% endblock %}

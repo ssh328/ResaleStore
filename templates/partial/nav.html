@@ -1,12 +1,12 @@
 <nav class="navbar navbar-expand-sm navbar-dark nav-bg-color fixed-top">
-    <a class="navbar-brand mx-2" href="#">Resale HUB</a>
+    <a class="navbar-brand mx-2" href="{{ url_for('home') }}">Resale Store</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#expandme" aria-controls="expandme" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="expandme">
         <ul class="navbar-nav ms-auto text-center"> <!-- ms-auto: 왼쪽 마진 자동으로, text-center: 글씨를 가운데 정렬 -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                <a class="nav-link" href="{{ url_for('home') }}">홈</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('posts.all_products') }}">모든 상품</a>

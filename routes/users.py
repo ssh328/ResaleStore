@@ -309,6 +309,7 @@ def delete_account():
 
 # 유저 프로필 창
 @users.route('/users/<string:user_name>')
+@admin_only
 def user_profile(user_name):
     # get_or_404(): 기본적으로 기본키를 사용
     # 이를 해결하기 위해 filter_by() 사용

@@ -41,11 +41,8 @@
             <form action="{{ url_for('chatting.chat_room') }}" method="POST">
                 <input type="hidden" name="receive_user_id" value="{{ requested_post.author.id }}">
                 <input type="hidden" name="receive_user_name" value="{{ requested_post.author.name }}">
-                <button type="submit" class="btn btn-outline-primary w-100">채팅하기</button>
+                <button type="submit" class="btn btn-outline-primary w-100 mb-3">채팅하기</button>
             </form>
-            <!-- <button type="button" class="btn btn-outline-primary w-100" id="chat_btn" 
-                data-receive-user-id="{{ requested_post.author.id }}" 
-                data-receive-user-name="{{ requested_post.author.name }}">채팅하기</button> -->
             {% endif %}
 
             {% if current_user.id == ADMIN_USER_ID or current_user.id == requested_post.author.id : %}
@@ -53,10 +50,7 @@
                 <form action="{{ url_for('posts.edit', post_id=requested_post.id) }}" method="GET">
                     <button type="submit" name="edit_btn" class="btn btn-outline-info">수정하기</button>
                 </form>
-
-
                 <button type="submit" name="delete_btn" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제하기</button>
-
                 <!-- Modal -->
                 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" inert>
                     <div class="modal-dialog modal-dialog-centered">
@@ -85,7 +79,7 @@
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" inert>
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div id="modalCarousel" class="carousel slide">

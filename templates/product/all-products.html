@@ -28,7 +28,8 @@
 {% include 'partial/offcanvas.html' %}
 
 <!-- bootstrap 5에서 컬럼 간 간격은 g-* -->
-<div class="row row row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 mb-5">
+{% if all_data %}
+<div class="row row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 mb-5">
     {% for data in all_data %}
     <div class="col">
         <div class="card" style="width: 100%;">
@@ -48,7 +49,7 @@
                         <span class="text-truncate d-inline-block w-100">posted by {{ data.author.name }}</span>
                         <div class="d-flex align-items-center">
                             <span class="heart_btn increase-cnt-btn me-2" data-post-id="{{ data.id }}">
-                                {% if data.id in like_posts: %}
+                                {% if data.id in like_posts %}
                                 <i class="fa-solid fa-heart fa-bounce" style="color: #ff0000; --fa-animation-iteration-count: 0;"></i>
                                 {% else %}
                                 <i class="fa-regular fa-heart" style="color: #000000;"></i>
@@ -65,6 +66,13 @@
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="col-md-12 col-lg-12 d-flex justify-content-center">
+    <div class="text-center mt-5">
+        <p class="text-muted">게시물이 없습니다.</p>
+    </div>
+</div>
+{% endif %}
 
 <!--PAGINATION-->
 <div class="d-flex justify-content-center mt-5">
@@ -120,7 +128,9 @@
     </nav>
 </div>
 
+{% if current_user.is_authenticated %}
 <script src="{{ url_for('static', filename='javascripts/like_cnt.js') }}"></script>
+{% endif %}
 
 {% endblock %}
 

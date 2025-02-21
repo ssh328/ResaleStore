@@ -48,20 +48,10 @@ with app.app_context():
 def load_user(user_id):
     return db.session.get(User, user_id)
 
-
 # 메인 페이지
 @app.route('/')
-def index():
-    return render_template('index.html', logged_in=current_user.is_authenticated)
-    # current_user.is_authenticated: 현재 사용자가 인증 된 사용자 인지 여부 확인
-
-
-# 로그인 하면 뜨는 창
-@app.route('/home')
-@admin_only
 def home():
-    return render_template('home.html', name=current_user.name,
-                           logged_in=current_user.is_authenticated)
+    return render_template('home.html', logged_in=current_user.is_authenticated)
 
 
 # 블루프린트 등록
