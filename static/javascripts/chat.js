@@ -1,3 +1,7 @@
+let socket = io();
+let CURRENT_USER = null;
+let ROOM_ID = null;
+let RECEIVE_USER_NAME = null;
 // redirect_url이 존재할 경우 해당 URL로 리디렉션
 const chatContainer = document.getElementById('chat-container');
 const redirectUrl = chatContainer.dataset.redirectUrl;
@@ -5,22 +9,18 @@ const redirectUrl = chatContainer.dataset.redirectUrl;
 if (redirectUrl) {
     // redirectUrl에서 roomid, receive_user_id, receive_user_name 추출
     const url = redirectUrl;
-    console.log(url);
     const roomId = url.match(/new_chat_room_id=([^&]*)/)[1];
-    console.log(roomId);
     const receiveUserId = url.match(/\/chat\/get_messages\/([^?]*)/)[1];
-    console.log(receiveUserId);
     const receiveUserName = url.match(/receive_user_name=([^&]*)/)[1];
-    console.log(receiveUserName);
 
-    // 채팅 UI 요소들의 표시 상태 설정
-    document.getElementById('chat-room-widget-content').style.display = 'block';
+    setUpChatUI(receiveUserName);
+    // // 채팅 UI 요소들의 표시 상태 설정
+    // document.getElementById('chat-room-widget-content').style.display = 'block';
+    // // chat-content 표시
+    // document.querySelector('.chat-content').style.display = 'block';
+    // document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
+    // document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
 
-    // chat-content 표시
-    document.querySelector('.chat-content').style.display = 'block';
-
-    document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
-    document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
 
     // 첫 번째 AJAX 요청: 채팅방 입장 처리
     fetch(redirectUrl, {
@@ -34,113 +34,202 @@ if (redirectUrl) {
         })
     })
     .then(response => response.json())
-    .then(data => {
-        if (data) {
-            // 성공 시 채팅방으로 이동
-            console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
+    .then(chatRoomData)
+    // .then(data => {
+    //     if (data) {
+    //         // 성공 시 채팅방으로 이동
+    //         console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
 
-            // 전역 변수에 값 할당
-            CURRENT_USER = data.current_user.name;
-            ROOM_ID = data.room_id;
-            RECEIVE_USER_NAME = data.receive_user_name;
+    //         // 전역 변수에 값 할당
+    //         CURRENT_USER = data.current_user.name;
+    //         ROOM_ID = data.room_id;
+    //         RECEIVE_USER_NAME = data.receive_user_name;
 
-            // 기존 메시지 목록 초기화
-            document.getElementById('messages').innerHTML = '';
+    //         // 기존 메시지 목록 초기화
+    //         document.getElementById('messages').innerHTML = '';
 
-            // 날짜 구분선을 위한 변수 초기화
-            lastDate = null;
+    //         // 날짜 구분선을 위한 변수 초기화
+    //         lastDate = null;
 
-            // 소켓 연결 및 채팅방 입장
-            socket.emit("join", {
-                "current_user": CURRENT_USER,
-                "room_id": ROOM_ID
-            });
+    //         // 소켓 연결 및 채팅방 입장
+    //         socket.emit("join", {
+    //             "current_user": CURRENT_USER,
+    //             "room_id": ROOM_ID
+    //         });
 
-            // 이전 메시지 표시
-            if (data.messages && data.messages.length > 0) {
-                data.messages.forEach(message => {
-                    createChatItem(
-                        message.sender_name,
-                        message.text,
-                        message.receive_user_name,
-                        message.time
-                    );
-                });
-            }
-        } else {
-            // 실패 시 에러 메시지 표시
-            alert('채팅방 입장에 실패했습니다.');
-        }
-    })
+    //         // 이전 메시지 표시
+    //         if (data.messages && data.messages.length > 0) {
+    //             data.messages.forEach(message => {
+    //                 createChatItem(
+    //                     message.sender_name,
+    //                     message.text,
+    //                     message.receive_user_name,
+    //                     message.time
+    //                 );
+    //             });
+    //         }
+    //     } else {
+    //         // 실패 시 에러 메시지 표시
+    //         alert('채팅방 입장에 실패했습니다.');
+    //     }
+    // })
     .catch(error => {
         console.error('Error:', error);
         alert('오류가 발생했습니다.');
     });
-
 }
 
+// 채팅 UI 요소들의 표시 상태 설정 
+function setUpChatUI(receiveUserName) {
+    document.getElementById('chat-room-widget-content').style.display = 'block';
+    // chat-content 표시
+    document.querySelector('.chat-content').style.display = 'block';
+    document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
+    document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
+}
 
-let socket = io();
-let CURRENT_USER = null;
-let ROOM_ID = null;
-let RECEIVE_USER_NAME = null;
+// 채팅방 데이터 처리
+function chatRoomData(data) {
+    if (data) {
+        // 성공 시 채팅방으로 이동
+        console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
 
-// 모든 채팅방 아이템에 대해 클릭 이벤트 리스너 추가
-document.querySelectorAll('.chat-room-item').forEach(item => {
-    item.addEventListener('click', function() {
-        const newRoomId = this.getAttribute('data-room-id');
+        // 전역 변수에 값 할당
+        CURRENT_USER = data.current_user.name;
+        ROOM_ID = data.room_id;
+        RECEIVE_USER_NAME = data.receive_user_name;
 
-        fetch('/chat/reset_unread_count', {
+        // 기존 메시지 목록 초기화
+        document.getElementById('messages').innerHTML = '';
+
+        // 날짜 구분선을 위한 변수 초기화
+        lastDate = null;
+
+        // 소켓 연결 및 채팅방 입장
+        socket.emit("join", {
+            "current_user": CURRENT_USER,
+            "room_id": ROOM_ID
+        });
+
+        // 이전 메시지 표시
+        if (data.messages && data.messages.length > 0) {
+            data.messages.forEach(message => {
+                createChatItem(
+                    message.sender_name,
+                    message.text,
+                    message.receive_user_name,
+                    message.time
+                );
+            });
+        }
+    } else {
+        // 실패 시 에러 메시지 표시
+        alert('채팅방 입장에 실패했습니다.');
+    }
+}
+
+function resetUreadCount(newRoomId) {
+    fetch('/chat/reset_unread_count', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            room_id: newRoomId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const unreadBadge = this.querySelector('.badge');
+            if (unreadBadge) {
+                unreadBadge.remove();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function handleStayJoin(newRoomId) {
+    if (ROOM_ID && ROOM_ID !== newRoomId) {
+        fetch('/chat/stay_join', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                room_id: newRoomId
+                current_user: CURRENT_USER,
+                room_id: ROOM_ID
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const unreadBadge = this.querySelector('.badge');
-                if (unreadBadge) {
-                    unreadBadge.remove();
-                }
-            }
-        })
+        .then(response => response.json())  // 응답을 JSON으로 파싱
         .catch(error => {
             console.error('Error:', error);
         });
+    }
+}
+
+// 모든 채팅방 아이템에 대해 클릭 이벤트 리스너 추가
+document.querySelectorAll('.chat-room-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const newRoomId = this.getAttribute('data-room-id');
+        resetUreadCount(newRoomId);
+        // fetch('/chat/reset_unread_count', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({
+        //         room_id: newRoomId
+        //     })
+        // })
+        // .then(response => response.json())
+        // .then(data => {
+        //     if (data.success) {
+        //         const unreadBadge = this.querySelector('.badge');
+        //         if (unreadBadge) {
+        //             unreadBadge.remove();
+        //         }
+        //     }
+        // })
+        // .catch(error => {
+        //     console.error('Error:', error);
+        // });
         
+        handleStayJoin(newRoomId);
         // 이전 채팅방이 있고, 새로운 방이 다른 경우에만 stay_join 실행
-        if (ROOM_ID && ROOM_ID !== newRoomId) {
-            fetch('/chat/stay_join', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    current_user: CURRENT_USER,
-                    room_id: ROOM_ID
-                })
-            })
-            .then(response => response.json())  // 응답을 JSON으로 파싱
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-        // 채팅 UI 요소들의 표시 상태 설정
-        document.getElementById('chat-room-widget-content').style.display = 'block';
-        document.querySelector('.chat-content').style.display = 'block';
-        
+        // if (ROOM_ID && ROOM_ID !== newRoomId) {
+        //     fetch('/chat/stay_join', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({
+        //             current_user: CURRENT_USER,
+        //             room_id: ROOM_ID
+        //         })
+        //     })
+        //     .then(response => response.json())  // 응답을 JSON으로 파싱
+        //     .catch(error => {
+        //         console.error('Error:', error);
+        //     });
+        // }
+
         // 클릭된 채팅방의 데이터 속성 값들을 가져옴
         const roomId = this.getAttribute('data-room-id');
         const receiveUserId = this.getAttribute('data-receive-user-id');
         const receiveUserName = this.getAttribute('data-receive-user-name');
 
-        document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
-        document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
-        // document.getElementById('leave_chat_btn').style.display = 'block'; // 채팅방 나가기 버튼 표시
+        setUpChatUI(receiveUserName);
+        // // 채팅 UI 요소들의 표시 상태 설정
+        // document.getElementById('chat-room-widget-content').style.display = 'block';
+        // document.querySelector('.chat-content').style.display = 'block';
+        // document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
+        // document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
+        
+
 
         // 첫 번째 AJAX 요청: 채팅방 입장 처리
         fetch(`/chat/get_messages/${receiveUserId}`, {
@@ -154,44 +243,45 @@ document.querySelectorAll('.chat-room-item').forEach(item => {
             })
         })
         .then(response => response.json())
-        .then(data => {
-            if (data) {
-                // 성공 시 채팅방으로 이동
-                console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
+        .then(chatRoomData)
+        // .then(data => {
+        //     if (data) {
+        //         // 성공 시 채팅방으로 이동
+        //         console.log(`성공 ${data.room_id}, ${data.receive_user_name}`);
 
-                // 전역 변수에 값 할당
-                CURRENT_USER = data.current_user.name;
-                ROOM_ID = data.room_id;
-                RECEIVE_USER_NAME = data.receive_user_name;
+        //         // 전역 변수에 값 할당
+        //         CURRENT_USER = data.current_user.name;
+        //         ROOM_ID = data.room_id;
+        //         RECEIVE_USER_NAME = data.receive_user_name;
 
-                // 기존 메시지 목록 초기화
-                document.getElementById('messages').innerHTML = '';
+        //         // 기존 메시지 목록 초기화
+        //         document.getElementById('messages').innerHTML = '';
 
-                // 날짜 구분선을 위한 변수 초기화
-                lastDate = null;
+        //         // 날짜 구분선을 위한 변수 초기화
+        //         lastDate = null;
 
-                // 소켓 연결 및 채팅방 입장
-                socket.emit("join", {
-                    "current_user": CURRENT_USER,
-                    "room_id": ROOM_ID
-                });
+        //         // 소켓 연결 및 채팅방 입장
+        //         socket.emit("join", {
+        //             "current_user": CURRENT_USER,
+        //             "room_id": ROOM_ID
+        //         });
 
-                // 이전 메시지 표시
-                if (data.messages && data.messages.length > 0) {
-                    data.messages.forEach(message => {
-                        createChatItem(
-                            message.sender_name,
-                            message.text,
-                            message.receive_user_name,
-                            message.time
-                        );
-                    });
-                }
-            } else {
-                // 실패 시 에러 메시지 표시
-                alert('채팅방 입장에 실패했습니다.');
-            }
-        })
+        //         // 이전 메시지 표시
+        //         if (data.messages && data.messages.length > 0) {
+        //             data.messages.forEach(message => {
+        //                 createChatItem(
+        //                     message.sender_name,
+        //                     message.text,
+        //                     message.receive_user_name,
+        //                     message.time
+        //                 );
+        //             });
+        //         }
+        //     } else {
+        //         // 실패 시 에러 메시지 표시
+        //         alert('채팅방 입장에 실패했습니다.');
+        //     }
+        // })
         .catch(error => {
             console.error('Error:', error);
             alert('오류가 발생했습니다.');
@@ -219,7 +309,6 @@ socket.on('status', function (d) {
 
 // 메시지 입력 처리
 const input = document.getElementById('text');
-// let currentRoomInfo = { CURRENT_USER: null, ROOM_ID: null, receive_user_name: null };
 input.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         const message = input.value;
@@ -393,16 +482,6 @@ leave_btn.addEventListener('click', async () => {
         'room_id': ROOM_ID,
         'receive_user_name': RECEIVE_USER_NAME
     });
-});
-
-// // 서버로부터의 응답을 처리하는 리스너 추가
-socket.on('leave_response', (response) => {
-    if (response.success) {
-        console.log('채팅방 나가기 성공');
-        window.location.href = '/chat/chat_room';
-    } else {
-        alert(response.message || '채팅방을 나가는데 실패했습니다.');
-    }
 });
 
 // 서버로부터의 응답을 처리하는 리스너
