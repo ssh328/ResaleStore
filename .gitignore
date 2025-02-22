@@ -1,8 +1,6 @@
 # Project Wide
 .DS_Store
 instance/data.db
-static/javascripts/ckeditor.js
-static/javascripts/main.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -13,7 +11,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-.Python
+.Python히
 build/
 develop-eggs/
 dist/
