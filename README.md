@@ -3,7 +3,7 @@
 ## 프로젝트 소개
 이 프로젝트는 "중고 거래 사이트"를 주제로 한 Flask 웹 애플리케이션입니다. 사용자들이 중고 물품을 쉽게 거래할 수 있도록 다양한 기능을 제공합니다.
 
-## 주요 기능
+## 📌주요 기능
 ### 사용자 관리
 - 회원가입 및 로그인
 - 프로필 수정
@@ -28,7 +28,7 @@
 - 거래 후기 작성
 - 별점 평가
 
-## 기술 스택
+## ⚙️기술 스택
 ### Frontend
 - HTML5
 - CSS
@@ -48,11 +48,23 @@
 ### Database
 - SQLite3
 
-## 실행 방법
-- Git clone 사용 또는, 다운로드
+## 💻실행 방법
+1. Git clone 사용 또는, 다운로드
 ```
 cd ResaleStore
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
+2. .env 파일 생성 후 아래 내용 추가
+- CLOUDINARY_CLOUD_NAME=your-cloud-name
+- CLOUDINARY_API_KEY=your-api-key
+- CLOUDINARY_API_SECRET=your-api-secret
+- SECRET_KEY=your-secret-key
+- SQLALCHEMY_DATABASE_URI=your-database-uri
+- ADMIN_USER_ID=your-admin-id
+3. 앱 실행
+```
+python main.py
+```
+4. 웹 브라우저 접속 <http://127.0.0.1:5000/>
