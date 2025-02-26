@@ -27,7 +27,7 @@ h1 {
     border-color: #FF6500 !important;
 }
 
-/* 버튼 클릭시 색상 전환 */
+/* When the button is clicked, the color changes */
 .btn-outline-primary:active {
     background-color: #FF6500 !important;
     color: #fff !important;
@@ -46,18 +46,9 @@ h1 {
     background-color: #FF6500;
 }
 
-.index-box {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	margin: -150px 0 0 -150px;
-	width:300px;
-	height:300px;
-}
-
 .card-img-square {
     width: 100%;
-    aspect-ratio: 1 / 1;  /* 정사각형 비율 */
+    aspect-ratio: 1 / 1;
     object-fit: cover;
 }
 
@@ -67,12 +58,12 @@ h1 {
     object-fit: cover;
 }
 
-/* offcanvas 크기 */
+/* offcanvas size */
 #offcanvasWithBothOptions {
     width: 15rem;
   }
 
-/* 기본 라디오 버튼 스타일 변경 */
+/* Default radio button style */
 input[type="radio"] {
     width: 20px;
     height: 20px;
@@ -82,20 +73,20 @@ input[type="radio"] {
     transition: all 0.3s ease;
 }
 
-/* 체크된 라디오 버튼 스타일 변경 */
+/* When the radio button is checked, the style changes */
 input[type="radio"]:checked {
-    border-color: #FF6500; /* 체크된 상태에서 테두리 색상 */
-    background-color: #FF6500; /* 체크된 상태에서 배경 색상 */
+    border-color: #FF6500;
+    background-color: #FF6500;
 }
 
-/* 라디오 버튼에 마우스를 올렸을 때의 스타일 */
+/* When the mouse is over the radio button, the style changes */
 input[type="radio"]:hover {
-    border-color: #FF6500; /* 마우스를 올렸을 때의 테두리 색상 */
+    border-color: #FF6500;
 }
 
 /*
-active: 라디오 버튼을 클릭할 때 활성화된 상태
-focus: 라디오 버튼에 포커스를 받을 때
+active: When the radio button is clicked, the style changes
+focus: When the radio button is focused, the style changes
 */
 input[type="radio"]:active,
 input[type="radio"]:focus {

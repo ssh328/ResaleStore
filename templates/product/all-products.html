@@ -11,7 +11,6 @@
     </div>
 </div>
 
-<!-- 검색창 추가 -->
 <div class="row mb-4">
     <div class="col-12">
         <form class="d-flex" action="{{ url_for('posts.all_products') }}" method="GET">
@@ -27,7 +26,6 @@
 
 {% include 'partial/offcanvas.html' %}
 
-<!-- bootstrap 5에서 컬럼 간 간격은 g-* -->
 {% if all_data %}
 <div class="row row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 mb-5">
     {% for data in all_data %}
@@ -78,51 +76,36 @@
 <div class="d-flex justify-content-center mt-5">
     <nav aria-label="Page navigation">
         <ul class="pagination">
-            <!-- 이전 페이지가 있는지 확인 -->
             {% if pagination.has_prev %}
-            <li class="page-item">
-                <!-- 있는 경우 이전 페이지에 대한 링크 생성 -->
-                <a class="page-link" href="{{ url_for('posts.all_products', page=pagination.prev_num) }}">이전</a>
-            </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('posts.all_products', page=pagination.prev_num) }}">이전</a>
+                </li>
             {% else %}
-            <!-- 아니라면, 'Previous' 버튼 비활성화 -->
-            <li class="page-item disabled"><span class="page-link">이전</span></li>
+                <li class="page-item disabled"><span class="page-link">이전</span></li>
             {% endif %}
 
-            <!-- pagination.iter_pages()에서 제공하는 각 페이지 번호 반복 -->
             {% for page_num in pagination.iter_pages() %}
-
-            <!-- 페이지 번호가 존재하는지 확인 -->
-            {% if page_num %}
-
-            <!-- 현재 페이지가 활성 페이지가 아닌지 확인 -->
-            {% if page_num != pagination.page %}
-            <!-- 페이지 번호에 대한 클릭 가능한 링크 생성 -->
-            <li class="page-item">
-                <a class="page-link" href="{{ url_for('posts.all_products', page=page_num) }}">{{ page_num }}</a>
-            </li>
-            {% else %}
-            <!-- 현재 페이지를 활성 페이지로 강조 표시하고 클릭할 수 없음 -->
-            <li class="page-item active" aria-current="page">
-                <span class="page-link">{{ page_num }}</span>
-            </li>
-            {% endif %}
-
-            {% else %}
-            <!-- 페이지 매기기 링크에 공백이 있는 경우 줄임표를 표시 -->
-            <li class="page-item disabled"><span class="page-link">...</span></li>
-            {% endif %}
+                {% if page_num %}
+                    {% if page_num != pagination.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('posts.all_products', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
             {% endfor %}
 
-            <!-- 다음 페이지가 있는지 확인 -->
             {% if pagination.has_next %}
-            <li class="page-item">
-                <!-- 있는 경우, 다음 페이지에 대한 링크 생성 -->
-                <a class="page-link" href="{{ url_for('posts.all_products', page=pagination.next_num) }}">다음</a>
-            </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('posts.all_products', page=pagination.next_num) }}">다음</a>
+                </li>
             {% else %}
-            <!-- 아니라면 'Next' 버튼 비활성화 -->
-            <li class="page-item disabled"><span class="page-link">다음</span></li>
+                <li class="page-item disabled"><span class="page-link">다음</span></li>
             {% endif %}
         </ul>
     </nav>
@@ -133,4 +116,3 @@
 {% endif %}
 
 {% endblock %}
-

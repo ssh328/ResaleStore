@@ -47,8 +47,8 @@
 .chat-room-list {
   background: white;
   border-radius: 3px;
-  height: calc(100vh - 100px); /* 헤더 높이를 고려한 높이 설정 */
-  overflow-y: auto; /* 내용이 넘칠 경우 스크롤 표시 */
+  height: calc(100vh - 100px);
+  overflow-y: auto;
   border-right: 1px solid #ccc;
 }
 
@@ -98,7 +98,15 @@
   margin-top: 4px;
 }
 
-/* 날짜 구분선 */
+.chat-room-item:hover {
+  background-color: #f8f9fa;
+}
+
+.text-truncate {
+  max-width: 250px;
+}
+
+/* Date Divider */
 .date-divider {
   text-align: center;
   margin: 20px 0;
@@ -118,12 +126,4 @@
     width: fit-content;
     margin-left: auto;
     margin-right: auto;
-}
-
-.chat-room-item:hover {
-  background-color: #f8f9fa;
-}
-
-.text-truncate {
-  max-width: 250px;
 }

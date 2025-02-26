@@ -6,12 +6,12 @@ function toggleSubmitButton() {
     const fileInput = document.getElementById('file_input');
     const submitButton = document.getElementById('saveButton');
     const previewImg = document.getElementById('preview_img');
-    const originalSrc = previewImg.dataset.originalSrc;    // 원본 이미지 경로
+    const originalSrc = previewImg.dataset.originalSrc;
     
     submitButton.disabled = !fileInput.files.length
     submitButton.className = fileInput.files.length ? 'btn btn-warning ms-2' : 'btn btn-outline-warning ms-2'
 
-    // 미리보기 이미지 업데이트
+    // Update preview image
     if (fileInput.files.length) {
         const file = fileInput.files[0];
         const reader = new FileReader();
@@ -21,7 +21,7 @@ function toggleSubmitButton() {
         }
         reader.readAsDataURL(file);
     } else {
-        previewImg.src = originalSrc; // current_user.profile_image_name으로 복원
-        document.getElementById('image_preview').style.display = 'block';   // 사진을 보이게 함
+        previewImg.src = originalSrc;
+        document.getElementById('image_preview').style.display = 'block';
     }   
 }

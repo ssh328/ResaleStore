@@ -4,15 +4,12 @@ from wtforms.fields.choices import SelectField
 from wtforms.widgets import TextArea
 from wtforms.validators import DataRequired, NumberRange, Length
 
-# bleach: Html을 정리하고, XSS 공격을 방지하는 라이브러리
 import bleach
 
 
-# 사용자 정의 유효성 검사, 입력값에서 HTML 태그를 제거
+# Custom validation to remove HTML tags from input values
 def escape_html(form, field):
-    # bleach.clean: 입력값에서 HTML 태그를 제거, Strip=True: 모든 태그 제거
     clean_data = bleach.clean(field.data, strip=True)
-    # HTML 태그가 포함된 경우, 에러 발생
     if clean_data != field.data:
         raise ValueError("Invalid input detected.")
     field.data = clean_data
@@ -22,7 +19,7 @@ def escape_html(form, field):
 class SignUpForm(FlaskForm):
     first_name = StringField(validators=[DataRequired()])
     last_name = StringField(validators=[DataRequired()])
-    name = StringField(validators=[DataRequired()]) # validators: 유효성 검사
+    name = StringField(validators=[DataRequired()])
     password = PasswordField(validators=[DataRequired(), Length(min=8)])
     email = EmailField(validators=[DataRequired()])
     submit = SubmitField('Log In')

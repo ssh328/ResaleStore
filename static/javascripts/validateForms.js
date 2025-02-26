@@ -1,5 +1,4 @@
-//유효성 검사하도록 하는 부트스트랩 JS코드
-// Example starter JavaScript for disabling form submissions if there are invalid fields
+// Bootstrap validation code for validating forms
 (() => {
     'use strict'
   

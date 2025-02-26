@@ -2,23 +2,23 @@ let socket = io();
 let CURRENT_USER = null;
 let ROOM_ID = null;
 let RECEIVE_USER_NAME = null;
-// redirect_url이 존재할 경우 해당 URL로 리디렉션
+// Redirect to the specified URL if redirect_url exists
 const chatContainer = document.getElementById('chat-container');
 const redirectUrl = chatContainer.dataset.redirectUrl;
 
 if (redirectUrl) {
-    // redirectUrl에서 roomid, receive_user_id, receive_user_name 추출
+    // Extract roomid, receive_user_id, receive_user_name from redirectUrl
     const url = redirectUrl;
     const roomId = url.match(/new_chat_room_id=([^&]*)/)[1];
     const receiveUserId = url.match(/\/chat\/get_messages\/([^?]*)/)[1];
     const receiveUserName = url.match(/receive_user_name=([^&]*)/)[1];
 
-    // 채팅 UI 요소들의 표시 상태 설정
+    // Set the display status of the chat UI elements
     document.getElementById('chat-room-widget-content').style.display = 'block';
-    // chat-content 표시
+    // Display chat-content
     document.querySelector('.chat-content').style.display = 'block';
-    document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
-    document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
+    document.getElementById('chat-room-title').style.display = 'block'; // Display the title container
+    document.getElementById('chat-room-title').textContent = receiveUserName; // Set the name of the other user
 
     fetch('/chat/reset_unread_count', {
         method: 'POST',
@@ -42,7 +42,7 @@ if (redirectUrl) {
         console.error('Error:', error);
     });
 
-    // 첫 번째 AJAX 요청: 채팅방 입장 처리
+    // Process the chat room entry
     fetch(redirectUrl, {
         method: 'POST',
         headers: {
@@ -56,26 +56,26 @@ if (redirectUrl) {
     .then(response => response.json())
     .then(data => {
         if (data) {
-            // 성공 시 채팅방으로 이동
+            // When successful, move to the chat room
 
-            // 전역 변수에 값 할당
+            // Assign values to global variables
             CURRENT_USER = data.current_user.name;
             ROOM_ID = data.room_id;
             RECEIVE_USER_NAME = data.receive_user_name;
 
-            // 기존 메시지 목록 초기화
+            // Initialize the list of existing messages
             document.getElementById('messages').innerHTML = '';
 
-            // 날짜 구분선을 위한 변수 초기화
+            // Initialize the variable for the date divider
             lastDate = null;
 
-            // 소켓 연결 및 채팅방 입장
+            // Connect to the socket and enter the chat room
             socket.emit("join", {
                 "current_user": CURRENT_USER,
                 "room_id": ROOM_ID
             });
 
-            // 이전 메시지 표시
+            // Display the previous messages
             if (data.messages && data.messages.length > 0) {
                 data.messages.forEach(message => {
                     createChatItem(
@@ -87,7 +87,7 @@ if (redirectUrl) {
                 });
             }
         } else {
-            // 실패 시 에러 메시지 표시
+            // When failed, display the error message
             alert('채팅방 입장에 실패했습니다.');
         }
     })
@@ -98,7 +98,7 @@ if (redirectUrl) {
 
 }
 
-// 모든 채팅방 아이템에 대해 클릭 이벤트 리스너 추가
+// Add a click event listener to all chat room items
 document.querySelectorAll('.chat-room-item').forEach(item => {
     item.addEventListener('click', function() {
         const newRoomId = this.getAttribute('data-room-id');
@@ -125,7 +125,7 @@ document.querySelectorAll('.chat-room-item').forEach(item => {
             console.error('Error:', error);
         });
         
-        // 이전 채팅방이 있고, 새로운 방이 다른 경우에만 stay_join 실행
+        // If there is a previous chat room and the new room is different, execute stay_join
         if (ROOM_ID && ROOM_ID !== newRoomId) {
             fetch('/chat/stay_join', {
                 method: 'POST',
@@ -137,23 +137,23 @@ document.querySelectorAll('.chat-room-item').forEach(item => {
                     room_id: ROOM_ID
                 })
             })
-            .then(response => response.json())  // 응답을 JSON으로 파싱
+            .then(response => response.json())
             .catch(error => {
                 console.error('Error:', error);
             });
         }
-        // 클릭된 채팅방의 데이터 속성 값들을 가져옴
+        // Get the data attributes of the clicked chat room
         const roomId = this.getAttribute('data-room-id');
         const receiveUserId = this.getAttribute('data-receive-user-id');
         const receiveUserName = this.getAttribute('data-receive-user-name');
 
-        // 채팅 UI 요소들의 표시 상태 설정
+        // Set the display status of the chat UI elements
         document.getElementById('chat-room-widget-content').style.display = 'block';
         document.querySelector('.chat-content').style.display = 'block';
-        document.getElementById('chat-room-title').style.display = 'block'; // 제목 컨테이너 표시
-        document.getElementById('chat-room-title').textContent = receiveUserName; // 상대방 이름 설정
+        document.getElementById('chat-room-title').style.display = 'block'; // Display the title container
+        document.getElementById('chat-room-title').textContent = receiveUserName; // Set the name of the other user
 
-        // 첫 번째 AJAX 요청: 채팅방 입장 처리
+        // Process the chat room entry
         fetch(`/chat/get_messages/${receiveUserId}`, {
             method: 'POST',
             headers: {
@@ -167,26 +167,26 @@ document.querySelectorAll('.chat-room-item').forEach(item => {
         .then(response => response.json())
         .then(data => {
             if (data) {
-                // 성공 시 채팅방으로 이동
+                // When successful, move to the chat room
 
-                // 전역 변수에 값 할당
+                // Assign values to global variables
                 CURRENT_USER = data.current_user.name;
                 ROOM_ID = data.room_id;
                 RECEIVE_USER_NAME = data.receive_user_name;
 
-                // 기존 메시지 목록 초기화
+                // Initialize the list of existing messages
                 document.getElementById('messages').innerHTML = '';
 
-                // 날짜 구분선을 위한 변수 초기화
+                // Initialize the variable for the date divider
                 lastDate = null;
 
-                // 소켓 연결 및 채팅방 입장
+                // Connect to the socket and enter the chat room
                 socket.emit("join", {
                     "current_user": CURRENT_USER,
                     "room_id": ROOM_ID
                 });
 
-                // 이전 메시지 표시
+                // Display the previous messages
                 if (data.messages && data.messages.length > 0) {
                     data.messages.forEach(message => {
                         createChatItem(
@@ -198,7 +198,7 @@ document.querySelectorAll('.chat-room-item').forEach(item => {
                     });
                 }
             } else {
-                // 실패 시 에러 메시지 표시
+                // When failed, display the error message
                 alert('채팅방 입장에 실패했습니다.');
             }
         })
@@ -209,7 +209,7 @@ document.querySelectorAll('.chat-room-item').forEach(item => {
     });
 });
 
-// 상태 메시지 처리 (입장/퇴장 등)
+// Process the status message (entering/leaving, etc.)
 socket.on('status', function (d) {
     const messages = document.getElementById('messages');
     const li = document.createElement('li');
@@ -221,19 +221,19 @@ socket.on('status', function (d) {
     li.appendChild(statusDiv);
     messages.appendChild(li);
 
-    // 스크롤을 최하단으로 이동
+    // Move the scroll to the bottom
     const msgsContainer = document.getElementById('msgs-container');
     msgsContainer.scrollTop = msgsContainer.scrollHeight;
 });
 
-// 메시지 입력 처리
+// Process the message input
 const input = document.getElementById('text');
-// let currentRoomInfo = { CURRENT_USER: null, ROOM_ID: null, receive_user_name: null };
+
 input.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         const message = input.value;
         input.value = ''
-        // 메시지 전송
+        // Send the message
         socket.emit('message', {
             'message': message,
             'current_user': CURRENT_USER,
@@ -243,56 +243,56 @@ input.addEventListener('keypress', (event) => {
     }
 });
 
-// 날짜 구분선을 위한 변수
+// Initialize the variable for the date divider
 let lastDate = null;
 
-// 날짜 구분선 생성 함수
+// Create the date divider function
 function createDateDivider(messageDate) {
-    // messages 요소 참조
+    // Reference the messages element
     const messages = document.getElementById('messages');
 
-    // 새로운 li와 div 요소 생성
+    // Create a new li and div element
     const li = document.createElement('li');
     const dateDiv = document.createElement('div');
 
-    // date-divider 클래스 추가하여 스타일 적용
+    // Add the date-divider class to apply the style
     dateDiv.classList.add('date-divider');
 
-    // 날짜 형식 설정
+    // Set the date format
     const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
 
-    // 날짜 한국어 형식으로 변환
+    // Convert the date to Korean format
     dateDiv.textContent = messageDate.toLocaleDateString('ko-KR', options);
 
-    // li 요소에 dateDiv 추가
+    // Add the dateDiv to the li element
     li.appendChild(dateDiv);
 
-    // messages 요소에 li 추가
+    // Add the li element to the messages element
     messages.appendChild(li);
 }
 
-// 채팅 메시지 아이템 생성 함수
+// Create the chat message item function
 function createChatItem(sender_name, text, receive_user_name, timestamp = null, room_id) {
-    // timestamp가 있으면 timestamp를 사용하고, 없으면 현재 시간을 사용
+    // If timestamp exists, use timestamp, otherwise use the current time
     const messageDate = timestamp ? new Date(timestamp) : new Date();
 
-    // 날짜가 변경되었거나 첫 메시지인 경우 날짜 구분선 추가
+    // If the date has changed or it is the first message, add the date divider
     const currentDate = messageDate.toDateString();
     if (lastDate !== currentDate) {
         createDateDivider(messageDate);
         lastDate = currentDate;
     }
 
-    // DOM 요소 생성
+    // Create the DOM elements
     const messages = document.getElementById('messages');
     const li = document.createElement('li');
     const messageContainer = document.createElement('div');
     const nameSpan = document.createElement('span');
     const textSpan = document.createElement('span')
-    const timeSpan = document.createElement('span'); // 시간 표시를 위한 새로운 span
+    const timeSpan = document.createElement('span'); // For displaying the time
     const msgsContainer = document.getElementById('msgs-container');
 
-    // 현재 시간 가져오기
+    // Get the current time
     const now = new Date();
     const hours = messageDate.getHours();
     const minutes = messageDate.getMinutes();
@@ -300,7 +300,7 @@ function createChatItem(sender_name, text, receive_user_name, timestamp = null, 
     const formattedHours = hours % 12 || 12;
     const formattedTime = `${ampm} ${formattedHours}:${minutes.toString().padStart(2, '0')}`;
 
-    // 이전 메시지의 시간과 발신자를 확인하기 위해 마지막 메시지 요소 가져오기
+    // Get the last message element to check the time and sender of the previous message
     const lastMessage = messages.lastElementChild;
     let showTime = true;
 
@@ -310,47 +310,47 @@ function createChatItem(sender_name, text, receive_user_name, timestamp = null, 
         const isSameSender = (sender_name === CURRENT_USER && lastMessageContainer.classList.contains('my-message-container')) ||
                             (sender_name !== CURRENT_USER && lastMessageContainer.classList.contains('other-message-container'));
         
-        // 이전 메시지의 시간과 현재 메시지의 시간이 같고 같은 발신자인 경우
+        // If the time of the previous message and the current message are the same and the same sender, hide the time of the previous message
         if (isSameSender && lastMessageTime && lastMessageTime.textContent === formattedTime) {
-            // 이전 메시지의 시간을 숨김
+            // Hide the time of the previous message
             lastMessageTime.style.display = 'none';
-            showTime = true; // 현재 메시지(마지막 메시지)에만 시간 표시
+            showTime = true; // Display the time of the current message (the last message)
         }
     }
 
-    // 시간 스타일 클래스 추가
+    // Add the time style class
     timeSpan.classList.add('message-time');
     if (showTime) {
         timeSpan.textContent = formattedTime;
     }
 
-    // 현재 스크롤이 거의 맨 아래인지 확인 (여유값 10px)
+    // Check if the current scroll is almost at the bottom (10px margin)
     const isScrolledToBottom = msgsContainer.scrollHeight - msgsContainer.clientHeight - msgsContainer.scrollTop <= 10;
 
-    // 메시지 스타일 클래스 추가
+    // Add the message style class
     nameSpan.classList.add('sender-name');
     textSpan.classList.add('message-text');
 
-    // 메시지 타입에 따른 스타일 적용 (내 메시지/상대방 메시지)
+    // Apply the style according to the message type (my message/other message)
     if (sender_name === CURRENT_USER) {
-        // 내가 보낸 메시지인 경우
+        // If it is my message
         messageContainer.classList.add('my-message-container');
         textSpan.textContent = text;
         messageContainer.appendChild(textSpan);
-        messageContainer.appendChild(timeSpan); // 내 메시지의 경우 시간을 오른쪽에 표시
-        // 내가 보낸 메시지는 항상 자동 스크롤로 최신 메시지 표시
+        messageContainer.appendChild(timeSpan); // For my message, display the time on the right
+        // My message is always displayed with automatic scrolling to the latest message
         setTimeout(() => {
             msgsContainer.scrollTop = msgsContainer.scrollHeight;
         }, 0);
     } else {
-        // 상대방이 보낸 메시지인 경우
+        // If it is the other person's message
         messageContainer.classList.add('other-message-container');
         textSpan.textContent = text;
         nameSpan.textContent = sender_name;
         messageContainer.appendChild(nameSpan);
         messageContainer.appendChild(textSpan);
-        messageContainer.appendChild(timeSpan); // 상대방 메시지의 경우에도 시간 표시 
-        // 사용자가 스크롤을 맨 아래에 위치시켰을 때만 자동 스크롤 실행
+        messageContainer.appendChild(timeSpan); // For the other person's message, also display the time
+        // Execute automatic scrolling only when the user scrolls to the bottom
         if (isScrolledToBottom) {
             setTimeout(() => {
                 msgsContainer.scrollTop = msgsContainer.scrollHeight;
@@ -358,7 +358,7 @@ function createChatItem(sender_name, text, receive_user_name, timestamp = null, 
         }
     }
 
-    // DOM에 요소 추가
+    // Add the elements to the DOM
     messageContainer.appendChild(nameSpan);
     messageContainer.appendChild(textSpan);
     messageContainer.appendChild(timeSpan);
@@ -366,30 +366,30 @@ function createChatItem(sender_name, text, receive_user_name, timestamp = null, 
     messages.appendChild(li);
 }
 
-// 서버에서 받은 메시지 처리
+// Process the message received from the server
 socket.on('message', function (dt) {
     createChatItem(dt.sender_name, dt.text, dt.receive_user_name, dt.timestamp, dt.room_id);
 
-    // 채팅 목록 업데이트
+    // Update the chat list
     const chatRoomItem = document.querySelector(`.chat-room-item[data-room-id="${dt.room_id}"]`);
     if (chatRoomItem) {
-        // 최신 메시지 텍스트 업데이트
+        // Update the latest message text
         const latestMessageElement = chatRoomItem.querySelector('.text-muted.text-truncate');
         if (latestMessageElement) {
             latestMessageElement.textContent = dt.text;
         }
         
-        // 시간 업데이트
+        // Update the time
         const timeElement = chatRoomItem.querySelector('.text-muted');
         if (timeElement) {
             const messageDate = new Date(dt.timestamp);
-            // UTC를 한국 시간(KST)으로 변환
+            // Convert UTC to Korean time (KST)
             const kstDate = new Date(messageDate.getTime() + (9 * 60 * 60 * 1000));
-            const formattedDate = kstDate.toISOString().split('T')[0];  // YYYY-MM-DD 형식
+            const formattedDate = kstDate.toISOString().split('T')[0];  // YYYY-MM-DD format
             timeElement.textContent = formattedDate;
         }
 
-        // 채팅방 목록의 맨 위로 이동
+        // Move the chat room list to the top
         const chatRoomList = document.querySelector('.chat-room-list');
         chatRoomList.insertBefore(chatRoomItem, chatRoomList.firstChild);
     }
@@ -404,7 +404,7 @@ leave_btn.addEventListener('click', async () => {
     });
 });
 
-// // 서버로부터의 응답을 처리하는 리스너 추가
+// Process the response from the server
 socket.on('leave_response', (response) => {
     if (response.success) {
         console.log('채팅방 나가기 성공');
@@ -414,11 +414,11 @@ socket.on('leave_response', (response) => {
     }
 });
 
-// 서버로부터의 응답을 처리하는 리스너
+// Process the response from the server
 socket.on('leave_response', (response) => {
     if (response.success) {
         console.log('채팅방 나가기 성공');
-        // 페이지 리디렉션
+        // Page redirection
         window.location.href = '/chat/chat_room';
     } else {
         alert(response.message || '채팅방을 나가는데 실패했습니다.');
@@ -426,7 +426,7 @@ socket.on('leave_response', (response) => {
 });
 
 
-// 페이지 이동 시 stay_join False로 변경
+// When the page is moved, change stay_join to False
 window.addEventListener('beforeunload', function(e) {
 if (CURRENT_USER && ROOM_ID) {
     fetch('/chat/stay_join', {
@@ -439,7 +439,7 @@ if (CURRENT_USER && ROOM_ID) {
             room_id: ROOM_ID
         })
     })
-    .then(response => response.json())  // 응답을 JSON으로 파싱
+    .then(response => response.json())
     .then(data => {
         if (data.success) {
             console.log('stay_join 실행');
