@@ -48,3 +48,11 @@
 ### Database
 - SQLite3
 
+## 실행 방법
+- Git clone 사용 또는, 다운로드
+```
+cd ResaleStore
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
