@@ -40,6 +40,10 @@
 - Flask
 - SQLAlchemy (ORM)
 - Flask-SocketIO (실시간 채팅)
+- Cloudinary
+- Flask-WTF
+- Flask-Login
+- Werkzeug Security
 
 ### Database
 - SQLite3
