@@ -8,21 +8,21 @@ from security.security import admin_only
 from cloudinary_dir.cloudinary import cloudinary
 import cloudinary.uploader
 
-# Blueprint for the users routes
+# users 라우트를 위한 Blueprint
 users = Blueprint('users', __name__, template_folder='templates/users')
 
-# Define the allowed file extensions.
+# 허용된 파일 확장자 정의
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
     """
-    Check if the uploaded file has an allowed extension
+    업로드된 파일이 허용된 확장자를 가지고 있는지 확인
     
     Parameters:
-        filename (str): The name of the file to check
+        filename (str): 확인할 파일 이름
     
     Returns:
-        bool: True if the extension is allowed, False otherwise
+        bool: 확장자가 허용되면 True, 아니면 False
     """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -30,13 +30,13 @@ def allowed_file(filename):
 @users.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    Function that provides login functionality
+    로그인 기능을 제공하는 함수
 
-    - Users can log in by entering their email and password
-    - Redirects to the main page upon successful login
+    - 사용자가 이메일과 비밀번호를 입력하여 로그인
+    - 로그인 성공 시 메인 페이지로 리다이렉트
 
     Returns:
-        template: Login page
+        template: 로그인 페이지
     """
     form = LoginForm()
     if form.validate_on_submit():
@@ -61,12 +61,12 @@ def login():
 @users.route('/logout')
 def logout():
     """
-    Function that provides logout functionality
+    로그아웃 기능을 제공하는 함수
 
-    - Logs out the currently logged in user
+    - 현재 로그인된 사용자를 로그아웃
 
     Returns:
-        redirect: The post list page
+        redirect: 게시물 목록 페이지
     """
     logout_user()
     flash('Logged out successfully!', 'success')
@@ -76,13 +76,13 @@ def logout():
 @users.route('/register', methods=['GET', 'POST'])
 def register():
     """
-    Function that provides registration functionality
+    회원가입 기능을 제공하는 함수
 
-    - Users can register by entering their email, password, etc.
-    - Redirects to the main page after successful registration
+    - 사용자가 이메일, 비밀번호 등을 입력하여 가입
+    - 가입 성공 후 메인 페이지로 리다이렉트
 
     Returns:
-        template: The registration page
+        template: 회원가입 페이지
     """
     form = SignUpForm()
     if form.validate_on_submit():
@@ -118,12 +118,12 @@ def register():
 @admin_only
 def my_page():
     """
-    Function that displays the my page
+    마이페이지를 표시하는 함수
 
-    - Displays the current user's posts and liked posts
+    - 현재 사용자의 게시물과 좋아요한 게시물 표시
 
     Returns:
-        template: The my page
+        template: 마이페이지
     """
     author_post = Post.query.filter_by(author_id=current_user.id).all()
 
@@ -156,16 +156,16 @@ def my_page():
 @admin_only
 def upload_profile_image(user_id):
     """
-    Function that uploads a profile image
+    프로필 이미지를 업로드하는 함수
 
-    - Users can upload a new profile image
-    - Deletes the previous image and updates with the new image
+    - 사용자가 새로운 프로필 이미지를 업로드
+    - 이전 이미지를 삭제하고 새로운 이미지로 업데이트
 
     Parameters:
-        user_id (str): The ID of the user to upload the profile image to
+        user_id (str): 프로필 이미지를 업로드할 사용자의 ID
 
     Returns:
-        redirect: The my page
+        redirect: 마이 페이지로 리다이렉트
     """
     if request.method == "POST":
 
@@ -215,10 +215,10 @@ def upload_profile_image(user_id):
 @admin_only
 def profile_edit():
     """
-    Function that displays the profile edit page
+    프로필 편집 페이지를 표시하는 함수
 
     Returns:
-        template: The profile edit page
+        template: 프로필 편집 페이지
     """
     return render_template('users/profile_edit.html', 
                            name=current_user.name, 
@@ -230,12 +230,12 @@ def profile_edit():
 @admin_only
 def my_post():
     """
-    Function that displays the user's posts
+    사용자의 게시물을 표시하는 함수
 
-    - Displays the user's posts using pagination
+    - 페이지네이션을 사용하여 사용자의 게시물을 표시
 
     Returns:
-        template: The user's posts page
+        template: 사용자의 게시물 페이지
     """
     page = request.args.get('page', 1, type=int)
     posts = Post.query.filter_by(author_id=current_user.id).paginate(page=page, per_page=20, error_out=False)
@@ -255,12 +255,12 @@ def my_post():
 @admin_only
 def like_post():
     """
-    Function that displays the user's liked posts
+    사용자가 좋아요한 게시물을 표시하는 함수
 
-    - Displays the user's liked posts using pagination
+    - 페이지네이션을 사용하여 사용자의 좋아요한 게시물 표시
 
     Returns:
-        template: The user's liked posts page
+        template: 사용자가 좋아요한 게시물 페이지
     """
     page = request.args.get('page', 1, type=int)
     posts = Like.query.filter_by(user_email=current_user.email).paginate(page=page, per_page=20, error_out=False)
@@ -281,12 +281,12 @@ def like_post():
 @admin_only
 def change_password():
     """
-    Function that provides password change functionality
+    비밀번호 변경 기능을 제공하는 함수
 
-    - Users can change their password by entering their current password
+    - 사용자는 현재 비밀번호를 입력하여 비밀번호를 변경
 
     Returns:
-        template: The password change page
+        template: 비밀번호 변경 페이지
     """
     form = LoginForm()
     change_password_form = ChangePasswordForm()
@@ -324,14 +324,14 @@ def change_password():
 @admin_only
 def delete_account():
     """
-    Function that provides account deletion functionality
+    계정 삭제 기능을 제공하는 함수
 
-    - Users can delete their account after verifying their identity
-    - When an account is deleted, the user's posts and chat room information are updated
-    - When the account deletion is complete, the user is redirected to the main page
+    - 사용자는 자신의 신원을 확인한 후 계정을 삭제
+    - 계정이 삭제되면 사용자의 게시물 및 채팅방 정보가 업데이트
+    - 계정 삭제가 완료되면 사용자는 메인 페이지로 리다이렉트
 
     Returns:
-        redirect: The home page
+        redirect: 홈 페이지
     """
     form = LoginForm()
     authenticated = None
@@ -380,18 +380,18 @@ def delete_account():
 @admin_only
 def user_profile(user_name):
     """
-    Function that displays the user's profile page
+    사용자의 프로필 페이지를 표시하는 함수
 
-    - Searches for a user by the given user name
-    - Loads all posts written by the user using pagination
-    - Loads all reviews received by the user and the profile image of the review writer
-    - Loads the list of post IDs liked by the currently logged in user
+    - 주어진 사용자 이름으로 사용자를 검색
+    - 사용자가 작성한 모든 게시물을 페이지네이션을 사용하여 로드
+    - 사용자가 받은 모든 리뷰와 리뷰 작성자의 프로필 이미지를 로드
+    - 현재 로그인한 사용자가 좋아요를 누른 게시물 ID 목록을 로드
 
     Parameters:
-        user_name (str): The name of the user to display the profile for
+        user_name (str): 프로필을 표시할 사용자의 이름
 
     Returns:
-        template: The user's profile page
+        template: 사용자의 프로필 페이지
     """
     user = User.query.filter_by(name=user_name).first_or_404()
     page = request.args.get('page', 1, type=int)
@@ -430,17 +430,17 @@ def user_profile(user_name):
 @admin_only
 def reviews():
     """
-    Function that handles review submission
+    리뷰 제출을 처리하는 함수
 
-    - Allows users to submit reviews through POST requests
-    - Retrieves review text, user name, and rating from form data
-    - If no rating is provided, uses a default value of 1
-    - Creates a new review object and adds it to the database
-    - If successful, redirects to the user's profile page
-    - If submission fails, flashes an error message and redirects to the user's profile page
+    - 사용자가 POST 요청을 통해 리뷰를 제출할 수 있도록 허용
+    - 폼 데이터에서 리뷰 텍스트, 사용자 이름 및 평점을 가져옴
+    - 평점이 제공되지 않으면 기본값으로 1을 사용
+    - 새로운 리뷰 객체를 생성하고 데이터베이스에 추가
+    - 성공하면 사용자의 프로필 페이지로 리다이렉트
+    - 제출이 실패하면 오류 메시지를 표시하고 사용자의 프로필 페이지로 리다이렉트
 
     Returns:
-        redirect: The user's profile page
+        redirect: 사용자의 프로필 페이지
     """
     if request.method == 'POST':
         review_text = request.form.get('review')
@@ -472,13 +472,13 @@ def reviews():
 @admin_only
 def delete_review():
     """
-    Function that handles review deletion
+    리뷰 삭제를 처리하는 함수
 
-    - Deletes a review based on the provided review ID
-    - Redirects to the user's profile page after deletion
+    - 제공된 리뷰 ID를 기반으로 리뷰를 삭제
+    - 삭제 후 사용자의 프로필 페이지로 리다이렉트
 
     Returns:
-        redirect: The user's profile page
+        redirect: 사용자의 프로필 페이지
     """
     review_id = request.args.get('review_id')
     review = Review.query.get(review_id)

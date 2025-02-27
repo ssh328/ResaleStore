@@ -7,7 +7,7 @@ from wtforms.validators import DataRequired, NumberRange, Length
 import bleach
 
 
-# Custom validation to remove HTML tags from input values
+# 입력 값에서 HTML 태그 제거
 def escape_html(form, field):
     clean_data = bleach.clean(field.data, strip=True)
     if clean_data != field.data:

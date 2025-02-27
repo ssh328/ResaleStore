@@ -9,36 +9,36 @@ from security.security import admin_only, is_author
 from cloudinary_dir.cloudinary import cloudinary
 import cloudinary.uploader
 
-# Use the python-dotenv library to load the environment variables from the .env file into the process's environment variables.
+# .env 파일에서 환경 변수를 프로세스의 환경 변수로 로드하기 위해 python-dotenv 라이브러리를 사용
 load_dotenv()
 ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-# Blueprint for the posts routes
+# posts 라우트를 위한 Blueprint
 posts = Blueprint('posts', __name__, template_folder='templates/product')
 
 def allowed_file(filename):
     """
-    Check if the uploaded file has an allowed extension
+    업로드된 파일이 허용된 확장자를 가지고 있는지 확인
     
     Parameters:
-        filename (str): The name of the file to check
+        filename (str): 확인할 파일 이름
     
     Returns:
-        bool: True if the extension is allowed, False otherwise
+        bool: 확장자가 허용되면 True, 그렇지 않으면 False
     """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def search_posts(query):
     """
-    Search for posts containing the search query in the post title
+    게시물 제목에서 검색어를 포함하는 게시물을 검색
     
     Parameters:
-        query (str): The keyword to search for
+        query (str): 검색할 키워드
     
     Returns:
-        Select: The query object containing the search results
+        Select: 검색 결과를 포함하는 쿼리 객체
     """
     return db.select(Post).filter(Post.title.contains(query)).order_by(Post.date.desc())
 
@@ -47,16 +47,16 @@ def search_posts(query):
 @posts.route('/all-products', methods=['GET', "POST"])
 def all_products():
     """
-    Function to display all posts
+    모든 게시물을 표시하는 함수
 
-    - Filter by category
-    - Sorting function (latest, popular)
-    - Filter by price range
-    - Search function
-    - Pagination implementation
+    - 카테고리별 필터링
+    - 정렬 기능 (최신순, 인기순)
+    - 가격대별 필터링
+    - 검색 기능
+    - 페이지네이션 구현
 
     Returns:
-        template: The post list page
+        template: 게시물 목록 페이지
     """
     categories = [
         "디지털기기", "생활가전", "가구/인테리어", "생활/주방", "유아동", "유아도서",
@@ -112,13 +112,13 @@ def all_products():
 @posts.route('/post/<string:post_id>', methods=["GET", "POST"])
 def show_post(post_id):
     """
-    Function to display the detailed content of a specific post
+    특정 게시물의 상세 내용을 표시하는 함수
 
     Parameters:
-        post_id (str): The ID of the post to view
+        post_id (str): 조회할 게시물의 ID
 
     Returns:
-        template: The post detail page
+        template: 게시물 상세 페이지
     """
     requested_post = db.get_or_404(Post, post_id)
 
@@ -133,14 +133,14 @@ def show_post(post_id):
 @admin_only
 def add_new_products_post():
     """
-    Function to create a new post
+    새 게시물을 생성하는 함수
 
-    - Only admins can access
-    - Supports multiple image uploads
-    - Saves images using Cloudinary
+    - 관리자만 접근 가능
+    - 다중 이미지 업로드 지원
+    - Cloudinary를 사용하여 이미지 저장
 
     Returns:
-        template: The post creation page or redirects to the created post
+        template: 게시물 생성 페이지 또는 생성된 게시물로 리다이렉트
     """
     form = CreatePostForm()
     if request.method == "POST":
@@ -192,17 +192,17 @@ def add_new_products_post():
 @is_author
 def edit(post_id):
     """
-    Function to edit an existing post
+    기존 게시물을 수정하는 함수
 
-    - Only the author can access
-    - Adds/deletes images
-    - Modifies the post content
+    - 작성자만 접근 가능
+    - 이미지 추가/삭제
+    - 게시물 내용 수정
 
     Parameters:
-        post_id (str): The ID of the post to edit
+        post_id (str): 수정할 게시물의 ID
 
     Returns:
-        template: The post edit page or redirects to the edited post
+        template: 게시물 수정 페이지 또는 수정된 게시물로 리다이렉트
     """
     post = db.get_or_404(Post, post_id)
     form = CreatePostForm(
@@ -261,17 +261,17 @@ def edit(post_id):
 @is_author
 def delete(post_id):
     """
-    Function to delete a post
+    게시물을 삭제하는 함수
 
-    - Only the author can access
-    - Deletes associated images
-    - Deletes related like data
+    - 작성자만 접근 가능
+    - 관련 이미지 삭제
+    - 관련 좋아요 데이터 삭제
 
     Parameters:
-        post_id (str): The ID of the post to delete
+        post_id (str): 삭제할 게시물의 ID
 
     Returns:
-        redirect: The post list page
+        redirect: 게시물 목록 페이지
     """
     post_to_delete = db.get_or_404(Post, post_id)
     current_images = post_to_delete.img_url.split(',')

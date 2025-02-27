@@ -6,10 +6,10 @@ import uuid
 
 class Base(DeclarativeBase):
     """
-    Base class for SQLAlchemy models
+    SQLAlchemy 모델을 위한 기본 클래스
     
-    This defines a base class that serves as the foundation for all model classes,
-    inheriting from DeclarativeBase used in SQLAlchemy version 3.0+.
+    이 클래스는 모든 모델 클래스의 기초가 되며, SQLAlchemy 버전 3.0 이상에서 사용되는
+    DeclarativeBase를 상속
     """
     pass
 
@@ -20,22 +20,22 @@ db = SQLAlchemy(model_class=Base)
 
 class User(UserMixin, db.Model):
     """
-    A model that stores user information
+    사용자 정보를 저장하는 모델
     
     Attributes:
-        id (str): Unique identifier for the user (UUID)
-        first_name (str): User's first name
-        last_name (str): User's last name
-        name (str): User's nickname
-        email (str): User's email
-        password (str): Encrypted password
-        profile_image_name (str): Profile image file name
+        id (str): 사용자의 고유 식별자 (UUID)
+        first_name (str): 사용자의 이름
+        last_name (str): 사용자의 성
+        name (str): 사용자의 닉네임
+        email (str): 사용자의 이메일
+        password (str): 암호화된 비밀번호
+        profile_image_name (str): 프로필 이미지 파일명
         
     Relationships:
-        likes: Relationship with posts that the user liked
-        author_posts: Relationship with posts authored by the user
-        room_sender: Relationship with chat rooms sent by the user
-        room_receiver: Relationship with chat rooms received by the user
+        likes: 사용자가 좋아요한 게시물과의 관계
+        author_posts: 사용자가 작성한 게시물과의 관계
+        room_sender: 사용자가 보낸 채팅방과의 관계
+        room_receiver: 사용자가 받은 채팅방과의 관계
     """
     __tablename__ = "users"
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -54,22 +54,22 @@ class User(UserMixin, db.Model):
 
 class Post(db.Model):
     """
-    A model that stores post information
+    게시물 정보를 저장하는 모델
     
     Attributes:
-        id (str): Unique identifier for the post
-        title (str): Title of the post
-        date (DateTime): Date the post was created
-        body (Text): Content of the post
-        price (int): Price of the item
-        img_url (str): Image URL
-        like_cnt (int): Number of likes
-        category (str): Category of the post
-        author_id (str): ID of the post's author (foreign key)
+        id (str): 게시물의 고유 식별자
+        title (str): 게시물 제목
+        date (DateTime): 게시물 작성일
+        body (Text): 게시물 내용
+        price (int): 상품 가격
+        img_url (str): 이미지 URL
+        like_cnt (int): 좋아요 수
+        category (str): 게시물 카테고리
+        author_id (str): 작성자 ID (외래 키)
         
     Relationships:
-        liked_by: Relationship with users who liked the post (1:N relationship with Like model)
-        author: Relationship with the author of the post (N:1 relationship with User model)
+        liked_by: 게시물을 좋아요한 사용자와의 관계 (Like 모델과 1:N 관계)
+        author: 게시물 작성자와의 관계 (User 모델과 N:1 관계)
     """
     __tablename__ = "posts"
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -89,16 +89,16 @@ class Post(db.Model):
 
 class Like(db.Model):
     """
-    Model used when a user likes a post
+    사용자가 게시물에 좋아요를 눌렀을 때 사용되는 모델
     
     Attributes:
-        id (str): Unique identifier for the like
-        user_email (str): Email of the user who liked the post (foreign key)
-        post_id (str): ID of the post that was liked (foreign key)
+        id (str): 좋아요의 고유 식별자
+        user_email (str): 좋아요를 누른 사용자의 이메일 (외래 키)
+        post_id (str): 좋아요가 눌린 게시물의 ID (외래 키)
         
     Relationships:
-        user: Relationship with the user who liked the post
-        post: Relationship with the post that was liked
+        user: 좋아요를 누른 사용자와의 관계
+        post: 좋아요가 눌린 게시물과의 관계
     """
     __tablename__= "likes"
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -112,25 +112,25 @@ class Like(db.Model):
 
 class Room(db.Model):
     """
-    A model that manages chat rooms between users
+    사용자 간의 채팅방을 관리하는 모델
     
     Attributes:
-        id (str): Unique identifier for the chat room
-        sender_id (str): ID of the user who created the chat room
-        receiver_id (str): ID of the chat counterpart
-        date (DateTime): Date and time when the chat room was created
-        sender_last_join (DateTime): Last time the sender joined
-        receiver_last_join (DateTime): Last time the receiver joined
-        sender_unread_count (int): Number of unread messages for the sender
-        receiver_unread_count (int): Number of unread messages for the receiver
-        sender_join (bool): Participation status of the sender in the chat room
-        receiver_join (bool): Participation status of the receiver in the chat room
-        sender_stay_join (bool): Real-time connection status of the sender
-        receiver_stay_join (bool): Real-time connection status of the receiver
+        id (str): 채팅방의 고유 식별자
+        sender_id (str): 채팅방을 생성한 사용자의 ID
+        receiver_id (str): 채팅 상대방의 ID
+        date (DateTime): 채팅방 생성 일시
+        sender_last_join (DateTime): 발신자의 마지막 참여 시간
+        receiver_last_join (DateTime): 수신자의 마지막 참여 시간
+        sender_unread_count (int): 발신자의 읽지 않은 메시지 수
+        receiver_unread_count (int): 수신자의 읽지 않은 메시지 수
+        sender_join (bool): 발신자의 채팅방 참여 상태
+        receiver_join (bool): 수신자의 채팅방 참여 상태
+        sender_stay_join (bool): 발신자의 실시간 연결 상태
+        receiver_stay_join (bool): 수신자의 실시간 연결 상태
         
     Relationships:
-        sender: Relationship with the creator of the chat room
-        receiver: Relationship with the chat counterpart
+        sender: 채팅방 생성자와의 관계
+        receiver: 채팅 상대방과의 관계
     """
     __tablename__ = "rooms"
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -154,15 +154,15 @@ class Room(db.Model):
 
 class Message(db.Model):
     """
-    A model that stores messages in the chat room
+    채팅방의 메시지를 저장하는 모델
     
     Attributes:
-        id (str): Unique identifier for the message
-        sender_name (str): Name of the message sender (foreign key)
-        receive_user_name (str): Name of the message receiver
-        room_id (str): ID of the chat room to which the message belongs (foreign key)
-        text (Text): Content of the message
-        time (DateTime): Time when the message was sent
+        id (str): 메시지의 고유 식별자
+        sender_name (str): 메시지 발신자의 이름 (외래 키)
+        receive_user_name (str): 메시지 수신자의 이름
+        room_id (str): 메시지가 속한 채팅방의 ID (외래 키)
+        text (Text): 메시지 내용
+        time (DateTime): 메시지 전송 시간
     """
     __tablename__ = "messages"
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -175,14 +175,14 @@ class Message(db.Model):
 
 class Review(db.Model):
     """
-    A model that stores reviews written after transactions between users
+    사용자 간 거래 후 작성되는 리뷰를 저장하는 모델
     
     Attributes:
-        id (str): Unique identifier for the review
-        user_name (str): Name of the user being reviewed
-        review_writer (str): Name of the reviewer (foreign key)
-        review (Text): Content of the review (foreign key)
-        rating (int): Rating
+        id (str): 리뷰의 고유 식별자
+        user_name (str): 리뷰 대상 사용자의 이름
+        review_writer (str): 리뷰 작성자의 이름 (외래 키)
+        review (Text): 리뷰 내용 (외래 키)
+        rating (int): 평점
     """
     __tablename__ = "reviews"
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

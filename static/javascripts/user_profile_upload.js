@@ -11,7 +11,7 @@ function toggleSubmitButton() {
     submitButton.disabled = !fileInput.files.length
     submitButton.className = fileInput.files.length ? 'btn btn-warning ms-2' : 'btn btn-outline-warning ms-2'
 
-    // Update preview image
+    // 미리보기 이미지 업데이트
     if (fileInput.files.length) {
         const file = fileInput.files[0];
         const reader = new FileReader();

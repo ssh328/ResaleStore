@@ -1,11 +1,11 @@
-// Bootstrap validation code for validating forms
+// 부트스트랩 유효성 검사 코드
 (() => {
     'use strict'
   
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    // 유효성 검사 스타일을 적용할 모든 폼 가져오기
     const forms = document.querySelectorAll('.validated-form')
   
-    // Loop over them and prevent submission
+    // 반복하여 제출 방지
     Array.from(forms).forEach(form => {
        form.addEventListener('submit', event => {
        if (!form.checkValidity()) {

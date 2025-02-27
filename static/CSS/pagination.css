@@ -1,12 +1,12 @@
-/* PAGINATION */
-/* Default pagination button style */
+/* 페이지네이션 */
+/* 기본 페이지네이션 버튼 스타일 */
 .pagination > li > a {
     background-color: white;
     color: #FF6500;
     transition: border-color .3s;
 }
 
-/* When the mouse is over the pagination button or when it is focused */
+/* 페이지네이션 버튼에 마우스를 올리거나 포커스될 때 */
 .pagination > li > a:focus,
 .pagination > li > a:hover,
 .pagination > li > span:focus,
@@ -16,27 +16,27 @@
     border: solid 1px #FF6500;
 }
 
-/* Active pagination button style */
+/* 활성화된 페이지네이션 버튼 스타일 */
 .pagination > .active > a {
     color: white;
     background-color: #FF6500 !important;
     border: solid 1px #FF6500 !important;
 }
 
-/* When the mouse is over the active pagination button */
+/* 활성화된 페이지네이션 버튼에 마우스를 올릴 때 */
 .pagination > .active > a:hover {
     background-color: #FF6500 !important;
     border: solid 1px #FF6500;
 }
 
-/* Style for the active span element */
+/* 활성화된 span 요소 스타일 */
 .pagination > .active > span {
     color: white;
     background-color: #FF6500 !important;
     border: solid 1px #FF6500 !important;
 }
 
-/* When the mouse is over the active span element */
+/* 활성화된 span 요소에 마우스를 올릴 때 */
 .pagination > .active > span:hover {
     background-color: #FF6500 !important;
     border: solid 1px #FF6500;

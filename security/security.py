@@ -4,14 +4,14 @@ from functools import wraps
 
 from model.data import Post, db
 
-# Create an instance of Flask-Login's LoginManager
+# Flask-Login의 LoginManager 인스턴스 생성
 login_manager = LoginManager()
 
 
 def admin_only(f):
     """
-    If the user is not authenticated, redirect to the login page
-    If the user is authenticated, execute the original view function
+    사용자가 인증되지 않은 경우 로그인 페이지로 리다이렉트
+    사용자가 인증된 경우 원래의 뷰 함수 실행
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -26,8 +26,8 @@ def admin_only(f):
 
 def is_author(f):
     """
-    If the user is not authenticated, redirect to the login page
-    If the user is authenticated, execute the original view function
+    사용자가 인증되지 않은 경우 로그인 페이지로 리다이렉트
+    사용자가 인증된 경우 원래의 뷰 함수 실행
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):

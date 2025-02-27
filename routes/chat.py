@@ -7,10 +7,10 @@ from model.data import Room, Message, db, User
 from security.security import admin_only
 from app import app
 
-# Blueprint for the chat routes
+# 채팅 라우트를 위한 Blueprint
 chatting = Blueprint('chatting', __name__, template_folder='templates/chat')
 
-# SocketIO instance
+# SocketIO 인스턴스
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 
@@ -18,20 +18,20 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 @admin_only
 def chat_room():
     """
-    This is the route function that handles the chat room page
+    채팅방 페이지를 처리하는 라우트 함수
     
-    Handling POST requests:
-    - Creates a new chat room or joins an existing one
-    - Checks if a chat room already exists between the two users
-    - If no chat room exists, a new one is created
-    - If a chat room exists, updates the participation status and last join time
+    POST 요청 처리:
+    - 새로운 채팅방 생성 또는 기존 채팅방 참여
+    - 두 사용자 간의 채팅방이 이미 존재하는지 확인
+    - 채팅방이 없으면 새로 생성
+    - 채팅방이 있으면 참여 상태와 마지막 참여 시간 업데이트
     
-    Handling GET requests:
-    - Displays the list of chat rooms for the current user
+    GET 요청 처리:
+    - 현재 사용자의 채팅방 목록 표시
     
     Returns:
-        Response: Returns the rendering result of the chat room page
-        - Includes cache control headers to ensure the latest data is always displayed
+        Response: 채팅방 페이지의 렌더링 결과 반환
+        - 항상 최신 데이터가 표시되도록 캐시 제어 헤더 포함
     """
     if request.method == 'POST':
         receive_user_id = request.form.get('receive_user_id')
@@ -85,13 +85,13 @@ def chat_room():
 
 def get_chat_rooms():
     """
-    A function that retrieves all chat room information related to the current user
+    현재 사용자와 관련된 모든 채팅방 정보를 검색하는 함수
     
-    - Retrieve all chat rooms the user is participating in
-    - Collect detailed information for each chat room
+    - 사용자가 참여하고 있는 모든 채팅방 검색
+    - 각 채팅방에 대한 상세 정보 수집
     
     Returns:
-        list: List of chat room information
+        list: 채팅방 정보 목록
     """
     user_id = current_user.id
     rooms = Room.query.filter(or_(Room.sender_id == user_id, Room.receiver_id == user_id)).all()
@@ -99,26 +99,26 @@ def get_chat_rooms():
     
     def get_other_user_info(room):
         """
-        # Function to retrieve information about other participants in the chat room
+        채팅방의 다른 참여자 정보를 검색하는 함수
         
-        # Identify the current user and the other participant in the chat room
-        # Retrieve chat room information
-        # Collect information about the other participant
-        # Calculate the number of unread messages
-        # Retrieve information about the latest message
-        # Check the participation status in the chat room
+        - 채팅방에서 현재 사용자와 다른 참여자 식별
+        - 채팅방 정보 검색
+        - 다른 참여자의 정보 수집
+        - 읽지 않은 메시지 수 계산
+        - 최신 메시지 정보 검색
+        - 채팅방 참여 상태 확인
 
         Returns:
-            dict: Returns a dictionary containing the following information:
-                - email: Other participant's email
-                - receive_user_id: Other participant's user ID
-                - room_id: Chat room ID
-                - room_check: Chat room participation status
-                - receiver_name: Other participant's name
-                - latest_message: Content of the latest message
-                - message_time: Time of the message
-                - other_user_profile: Other participant's profile image
-                - unread_count: Number of unread messages
+            dict: 다음 정보를 포함하는 딕셔너리 반환:
+                - email: 다른 참여자의 이메일
+                - receive_user_id: 다른 참여자의 사용자 ID
+                - room_id: 채팅방 ID
+                - room_check: 채팅방 참여 상태
+                - receiver_name: 다른 참여자의 이름
+                - latest_message: 최신 메시지 내용
+                - message_time: 메시지 시간
+                - other_user_profile: 다른 참여자의 프로필 이미지
+                - unread_count: 읽지 않은 메시지 수
         """
         other_user_id = room.receiver_id if room.sender_id == user_id else room.sender_id
         other_user = User.query.get(other_user_id)
@@ -178,19 +178,19 @@ def get_chat_rooms():
 @admin_only
 def chat(receive_user_id):
     """
-    This is a route function that retrieves chat messages and creates a new chat room
+    채팅 메시지를 검색하고 새로운 채팅방을 생성하는 라우트 함수
     
     Parameters:
-        receive_user_id (str): The ID of the user receiving the message
+        receive_user_id (str): 메시지를 받는 사용자의 ID
     
-    Functionality:
-    - Check for existing chat rooms and create a new one if necessary
-    - Verify access permissions for the chat room.
-    - Update user participation status.
-    - Retrieve message history.
+    기능:
+    - 기존 채팅방 확인 및 필요한 경우 새로운 채팅방 생성
+    - 채팅방 접근 권한 확인
+    - 사용자 참여 상태 업데이트
+    - 메시지 기록 검색
     
     Returns:
-        JSON: Information about the chat room and messages
+        JSON: 채팅방 및 메시지 정보
     """
     receive_user = User.query.get(receive_user_id)
     receive_user_name = receive_user.name if receive_user else None
@@ -272,14 +272,14 @@ def chat(receive_user_id):
 @admin_only
 def update_stay_join():
     """
-    Function to update the user's chat room connection status
+    사용자의 채팅방 연결 상태를 업데이트하는 함수
     
-    - Called when leaving the chat room
-    - Sets the user's stay_join status to False
-    - Checks the existence of the chat room and user
+    - 채팅방을 나갈 때 호출
+    - 사용자의 stay_join 상태를 False로 설정
+    - 채팅방과 사용자의 존재 여부 확인
     
     Returns:
-        JSON: Success/Failure status
+        JSON: 성공/실패 상태
     """
     try:
         data = request.get_json()
@@ -315,13 +315,13 @@ def update_stay_join():
 @admin_only
 def reset_unread_count():
     """
-    Route function to reset the unread message count
+    읽지 않은 메시지 수를 초기화하는 라우트 함수
     
-    - Called when joining the chat room
-    - Resets the counter for the respective sender/receiver only
+    - 채팅방에 참여할 때 호출
+    - 해당 발신자/수신자에 대한 카운터만 초기화
     
     Returns:
-        JSON: Success/Failure status
+        JSON: 성공/실패 상태
     """
     data = request.get_json()
     room_id = data.get('room_id')
@@ -343,10 +343,10 @@ def reset_unread_count():
 @socketio.on("connect")
 def test_connect():
     """
-    Event handler to check if the socket connection was successful
+    소켓 연결이 성공했는지 확인하는 이벤트 핸들러
     
-    - Called when the client connects to the server
-    - Prints a message to the console when the connection is successful
+    - 클라이언트가 서버에 연결될 때 호출
+    - 연결이 성공하면 콘솔에 메시지 출력
     """
     print('connect!')
 
@@ -354,16 +354,16 @@ def test_connect():
 @socketio.on('join')
 def join(data):
     """
-    Event handler to update the user's chat room connection status
+    사용자의 채팅방 연결 상태를 업데이트하는 이벤트 핸들러
     
     Parameters:
-        data (dict): Data received from the client
-            - room_id: Chat room ID
-            - current_user: Current user name
+        data (dict): 클라이언트로부터 받은 데이터
+            - room_id: 채팅방 ID
+            - current_user: 현재 사용자 이름
     
-    - Updates the chat room connection status
-    - Joins the user to the specified chat room
-    - Sets the stay_join status to True
+    - 채팅방 연결 상태 업데이트
+    - 지정된 채팅방에 사용자 참여
+    - stay_join 상태를 True로 설정
     """
     room = data['room_id']
     current_user = data['current_user']
@@ -383,18 +383,18 @@ def join(data):
 @socketio.on('message')
 def handle_message(data):
     """
-    Event handler to process chat messages
+    채팅 메시지를 처리하는 이벤트 핸들러
     
     Parameters:
-        data (dict): Data received from the client
-            - room_id: Chat room ID
-            - current_user: Current user name
-            - message: Message content
-            - receive_user_name: Receiver name
+        data (dict): 클라이언트로부터 받은 데이터
+            - room_id: 채팅방 ID
+            - current_user: 현재 사용자 이름
+            - message: 메시지 내용
+            - receive_user_name: 수신자 이름
     
-    - Updates the unread message count
-    - Saves the message to the database
-    - Sends the message to other users in the chat room in real time
+    - 읽지 않은 메시지 수 업데이트
+    - 데이터베이스에 메시지 저장
+    - 채팅방의 다른 사용자에게 실시간으로 메시지 전송
     """
     room = data['room_id']
     name = data['current_user']
@@ -436,20 +436,20 @@ def handle_message(data):
 @socketio.on('leave')
 def on_leave(data):
     """
-    Event handler called when the user presses the leave chat room button
+    사용자가 채팅방 나가기 버튼을 눌렀을 때 호출되는 이벤트 핸들러
     
     Parameters:
-        data (dict): Data received from the client
-            - room_id: Chat room ID
-            - current_user: Current user name
+        data (dict): 클라이언트로부터 받은 데이터
+            - room_id: 채팅방 ID
+            - current_user: 현재 사용자 이름
     
-    - Updates the chat room participation status
-    - Deletes the chat room and messages when both users have left
-    - Handles the process of leaving the chat room and sends related notifications
+    - 채팅방 참여 상태 업데이트
+    - 두 사용자 모두 나갔을 때 채팅방과 메시지 삭제
+    - 채팅방 나가기 처리 및 관련 알림 전송
     
-    Exception handling:
-    - If the user or chat room is not found
-    - If an error occurs during database processing
+    예외 처리:
+    - 사용자나 채팅방을 찾을 수 없는 경우
+    - 데이터베이스 처리 중 오류 발생 시
     """
     try:
         room_id = data['room_id']
@@ -492,11 +492,11 @@ def on_leave(data):
 @socketio.on('disconnect')
 def disconnect(reason):
     """
-    Event handler called when the socket connection is disconnected
+    소켓 연결이 끊어졌을 때 호출되는 이벤트 핸들러
     
     Parameters:
-        reason (str): The reason for the disconnection
+        reason (str): 연결 종료 이유
     
-    - Logs the disconnection of the client
+    - 클라이언트 연결 종료를 로그에 기록
     """
     print('Client disconnected, reason:', reason)
