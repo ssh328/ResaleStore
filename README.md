@@ -78,4 +78,3 @@ pip install -r requirements.txt
 python main.py
 ```
 4. 웹 브라우저 접속 <http://127.0.0.1:5000/>
->>>>>>> dbb86ea4df33be8541acdc511dc49f58c103e6ce
